@@ -1,4 +1,5 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
+- [ ] Complete requested autonomous-computer work: durable bot browser contexts with login handoff, 5-minute routines, media preparation and private downloadable artifacts; verify and document external blockers. التواصل مع المستخدم بالعربية.
 - [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
 - [ ] Next: persistent logged-in browser sessions per bot (Browserbase contexts) so bots stay signed in to sites.
 - [ ] Next: short-interval routines (e.g. every 5 minutes) — current routines are daily/weekly only.
