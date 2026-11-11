@@ -9,6 +9,8 @@
 - Routines accept `interval_minutes:5`; legacy daily/weekly schedules remain unchanged. The existing database lease and unique run prevent overlapping/duplicate runs. Login-required routines pause. Saved goals bound account authorization; no blanket permission to buy, publish or create accounts.
 
 ## Scheduler activation (external Supabase)
+Current status: Lovable site `https://hush-and-flow-studio.lovable.app` responded 200. Operator script `scripts/configure-scheduler.py --apply` saved the existing cron credential with GitHub sealed-box encryption and configured the app URL in the private scheduler repository. Authenticated callback returned JSON 200; workflow enabled and first dispatched job completed successfully at 18:17 UTC. `CEYO_SCHEDULER_CONFIGURED` was then saved; republish captures this environment change. A time-triggered user routine and its chat delivery remain unverified.
+
 There is no `cron.job` on this backend. User-managed Supabase cannot use Lovable's managed HTTP scheduler.
 The committed GitHub Actions workflow invokes the existing protected callback every five minutes (288 checks/day). Actions can be delayed by GitHub; it is not an exact-time SLA. For strict timing use an external scheduler with a five-minute cadence and sufficient HTTP execution timeout.
 

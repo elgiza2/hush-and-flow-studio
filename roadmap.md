@@ -1,14 +1,14 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
-- [ ] User chose Lovable publishing instead of Vercel: check security, publish current app, configure approved private scheduler and verify its live callback before enabling.
+- [x] Lovable publishing requested and site readback returned HTTP 200; authenticated live scheduler callback returned valid JSON 200. Encrypted GitHub secret/app URL saved; enabled five-minute schedule and first dispatched run completed successfully.
 - [x] Supplied test account: actual UI sign-in, run_code/export_file and chat CSV download verified with concrete contents. GitHub scheduler access investigated: repository pull only, no push/admin, Secrets/Actions configuration denied with 403.
 - [x] Resolve scheduler repository access: user approved a separate private repository; created elgizaiiio/ceyo-private-scheduler, installed the five-minute workflow, verified Secrets public-key access and ability to manage the workflow.
-- [ ] Activate five-minute scheduling: web.ceyo.si returns hosting HTTP 402 DEPLOYMENT_DISABLED. Workflow deliberately disabled until an approved live deployment and encrypted secret/URL setup; successful callback and scheduled run readback still required.
+- [x] Activate five-minute scheduling on hush-and-flow-studio.lovable.app using approved private GitHub repository; first run success at 18:17 UTC. CEYO_SCHEDULER_CONFIGURED saved after success; publish again to ship the updated server environment.
 - [ ] Connect website accounts: needs the account owner to authorize the intended Telegram/Shopify/Instagram/WhatsApp accounts; test-app password does not authorize or log in to those services.
 - [x] Implement durable bot browser contexts with human login handoff, minute routines, media preparation and private downloadable artifacts; live provider verification and external blockers documented in docs/AUTONOMOUS-COMPUTER.md.
 - [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
 - [x] Persistent Browserbase contexts per authorized bot, isolated computer controls, temporary login handoff. Actual website logins require the account owner and remain unverified.
 - [x] Five-minute routine schema/tools/lease/run handling and protected external callback; committed GitHub Actions schedule.
-- [ ] Activate and verify automatic schedule: needs deployed updated app, source-repository scheduler variable/secret, enabled workflow and successful callback readback. Current server marker is not configured; no claim of all-day autonomous execution.
+- [ ] Verify an actual saved user routine via a time-triggered run and chat delivery: callback/dispatch succeeded, but full-day operation and external account execution are not verified.
 - [x] ffmpeg preparation and private artifact export/download; live E2B file read and video encoding succeeded.
 - [ ] Remaining account checks: file readback after reload, browser human login/resume and real external website sessions unverified; initial signed-in CSV creation/download passed.
 - [ ] Rotate the E2B key later: it was shared in chat.
