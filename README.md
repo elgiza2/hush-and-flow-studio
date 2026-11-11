@@ -270,6 +270,11 @@ bunx vitest run
 انظر `roadmap.md` لحالة الطلب الحالي؛ الأقسام التاريخية فيه ليست قائمة حقائق حديثة وقد تتعارض بسبب نقل المساحات والخدمات.
 
 ## Current work
+### Group chats — 2026-11-11
+- People/bot groups (`PeopleChat`) now reuse the normal chat layout (`cx-*`): glass header pill with every group bot's avatar stacked (6 shown, then +N), agent-style bubbles with author names, markdown for bot replies, the floating composer, and add-person/add-bot/leave in the header menu.
+- Bots no longer need an @mention: `/api/people-bot` lets every bot in the chat answer each member message (an @mention narrows it to the named bots; at most 8 per message). Each bot sees earlier bots' replies so it does not repeat them. A "Bots are replying…" indicator shows while they answer.
+- Verification: TypeScript passes; `src/lib/people/mentions.test.ts` passes (3 tests); the new layout was checked in a browser with sample data. Live bot replies were not tested because no signed-in session is available in the sandbox.
+
 ### Vercel import, video repair, Cerebras routing and daily free quota — 2026-11-09
 - Imported `elgiza2/quiet-voice-workspace-71` into Vercel on `main`. Production is served at the public [Vercel project URL](https://quiet-voice-workspace-71.vercel.app), [app.ceyo.si](https://app.ceyo.si) and [web.ceyo.si](https://web.ceyo.si); all three returned HTTP 200 with the Ceyo app. Vercel authentication remains enabled for previews only. Correct public Supabase URL/project ID/publishable-key settings are present in all environments. The owner moved both requested subdomains to the new project in Vercel; no DNS records were changed by this task. The apex and `www` remain assigned to the older project.
 - Added and applied `reserve_free_video_call_minute`: one successful free video session per Cairo calendar day, with atomic duplicate protection. Anam tokens now have one start, a 120-second start-token expiry, and an Anam-side 60-second session cap; browser retries are disabled so one daily token cannot start multiple sessions. The API returns a clear 429 when the daily allowance has been used. Anam documents the session duration field and server-side stop endpoint at [create session token](https://anam.ai/docs/api-reference/sessions/create-session-token) and [stop session](https://anam.ai/docs/api-reference/sessions/stop-session).

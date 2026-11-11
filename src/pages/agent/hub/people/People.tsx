@@ -1,10 +1,13 @@
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check } from "lucide-react";
+import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import type { AgentInfo } from "@/lib/agentsky/client";
 import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot } from "@/lib/people/peopleApi";
 import { BotAvatar, type HubLang } from "../HubParts";
+import "@/styles/ceyo.css";
 import "@/styles/people.css";
 
 function PersonAvatar({ person, size = 36 }: { person?: PersonInfo | null; size?: number }) {
@@ -135,6 +138,12 @@ export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang
   </section>;
 }
 
+function fmtTime(at?: string) {
+  if (!at) return "";
+  const d = new Date(at);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; threadId: string; agents: AgentInfo[]; onBack: () => void }) {
   const ar = lang === "ar";
   const [me, setMe] = useState("");
@@ -144,7 +153,10 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [panel, setPanel] = useState<"" | "people" | "bots">("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [botsBusy, setBotsBusy] = useState(0);
   const scroller = useRef<HTMLDivElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
 
   const reloadInfo = () => peopleApi.info(threadId).then((i) => i && setInfo({ members: i.members || [], bots: i.bots || [] })).catch(() => {});
   useEffect(() => {
@@ -162,12 +174,25 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       }).subscribe();
     return () => { alive = false; void supabase.removeChannel(channel); };
   }, [threadId]);
-  useEffect(() => { scroller.current?.scrollTo({ top: scroller.current.scrollHeight }); }, [messages.length]);
+  useEffect(() => { scroller.current?.scrollTo({ top: scroller.current.scrollHeight }); }, [messages.length, botsBusy]);
+  useEffect(() => {
+    const el = textarea.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, [text]);
 
+  const isGroup = thread?.kind === "group";
   const other = thread?.kind === "direct" ? info.members.find((m) => m.id !== me) : null;
-  const title = thread?.kind === "group" ? thread.name || (ar ? "جروب" : "Group") : personLabel(other);
+  const title = isGroup ? thread?.name || (ar ? "جروب" : "Group") : personLabel(other);
   const people = useMemo(() => new Map(info.members.map((m) => [m.id, m])), [info.members]);
-  const bots = useMemo(() => new Map(info.bots.map((b) => [b.id, b])), [info.bots]);
+  // Prefer the owner's real bot record so the avatar matches the one in the normal chat.
+  const botAgents = useMemo(() => info.bots.map((b) => agents.find((a) => a.id === b.id) || botAgent(b)), [info.bots, agents]);
+  const bots = useMemo(() => new Map(info.bots.map((b, i) => [b.id, { bot: b, agent: botAgents[i] }])), [info.bots, botAgents]);
+
+  const mentionQuery = info.bots.length ? /(?:^|\s)@([^\s@]*)$/.exec(text)?.[1] : undefined;
+  const mentionMatches = mentionQuery === undefined ? [] : info.bots.filter((b) => b.name.toLowerCase().includes(mentionQuery.toLowerCase())).slice(0, 6);
+  const pickMention = (name: string) => { setText((t) => t.replace(/@([^\s@]*)$/, `@${name} `)); textarea.current?.focus(); };
 
   const send = async () => {
     const content = text.trim();
@@ -176,46 +201,117 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     try {
       const m = await peopleApi.send(threadId, content);
       setMessages((cur) => cur.some((x) => x.id === m.id) ? cur : [...cur, m]);
-      if (info.bots.length && content.includes("@")) void peopleApi.askBots(threadId, m.id);
+      if (info.bots.length) {
+        setBotsBusy((n) => n + 1);
+        void peopleApi.askBots(threadId, m.id).finally(() => {
+          setBotsBusy((n) => Math.max(0, n - 1));
+          // Pull replies in case the live update was missed.
+          void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
+        });
+      }
     } catch (e) { setText(content); setError(e instanceof Error ? e.message : "Not sent"); }
   };
 
-  return <section className="pp-chat">
-    <header className="pp-chat-head">
-      <button type="button" className="pp-icon" aria-label="Back" onClick={onBack}><ChevronLeft size={20} /></button>
-      {thread?.kind === "group" ? <span className="pp-avatar pp-group-avatar">{(thread.name || "G")[0].toUpperCase()}</span> : <PersonAvatar person={other} size={32} />}
-      <span className="pp-chat-title"><strong>{title}</strong><small>{thread?.kind === "group" ? `${info.members.length} ${ar ? "أشخاص" : "people"}${info.bots.length ? ` · ${info.bots.length} ${ar ? "بوت" : "bots"}` : ""}` : other?.username ? `@${other.username}` : ""}</small></span>
-      {thread?.kind === "group" && <>
-        <button type="button" className="pp-icon" aria-label={ar ? "ضيف شخص" : "Add person"} onClick={() => setPanel(panel === "people" ? "" : "people")}><UserPlus size={18} /></button>
-        <button type="button" className="pp-icon" aria-label={ar ? "ضيف بوت" : "Add bot"} onClick={() => setPanel(panel === "bots" ? "" : "bots")}><Bot size={18} /></button>
-      </>}
-      <button type="button" className="pp-icon" aria-label={ar ? "خروج" : "Leave"} onClick={() => { void peopleApi.leave(threadId).then(() => { window.dispatchEvent(new Event("ceyo-people-changed")); onBack(); }); }}><LogOut size={18} /></button>
+  const shownBots = botAgents.slice(0, 6);
+  const extraBots = Math.max(0, botAgents.length - shownBots.length);
+  const headAvatars = isGroup
+    ? shownBots.length
+      ? <span className="cx-stack">{shownBots.map((a) => <BotAvatar key={a.id} agent={a} size={22} />)}{extraBots > 0 && <span className="cx-stack-more">+{extraBots}</span>}</span>
+      : <span className="cx-stack">{info.members.slice(0, 4).map((p) => <PersonAvatar key={p.id} person={p} size={24} />)}</span>
+    : <PersonAvatar person={other} size={26} />;
+
+  return <section className="cx-chat" aria-label={`${title} conversation`}>
+    <header className="cx-head">
+      <button type="button" className="cx-circle cx-glass" aria-label={ar ? "رجوع" : "Back"} onClick={onBack}><ChevronLeft size={22} /></button>
+      <div className="cx-title-pill cx-glass">
+        {headAvatars}
+        <strong dir="auto">{title}</strong>
+      </div>
+      <div className="cx-head-actions">
+        <button type="button" className="cx-circle cx-glass cx-head-menu" aria-label="Menu" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}><MoreHorizontal size={20} /></button>
+      </div>
+      {menuOpen && <div className="cx-scrim" onPointerDown={() => setMenuOpen(false)} />}
+      {menuOpen && <div className="cx-pop cx-pop-down" role="menu">
+        {isGroup && <button type="button" onClick={() => { setMenuOpen(false); setPanel("people"); }}><UserPlus size={19} />{ar ? "ضيف شخص" : "Add person"}</button>}
+        {isGroup && <button type="button" onClick={() => { setMenuOpen(false); setPanel("bots"); }}><Bot size={19} />{ar ? "ضيف بوت" : "Add bot"}</button>}
+        <button type="button" data-danger="true" onClick={() => { setMenuOpen(false); void peopleApi.leave(threadId).then(() => { window.dispatchEvent(new Event("ceyo-people-changed")); onBack(); }); }}><LogOut size={19} />{ar ? "خروج" : "Leave"}</button>
+      </div>}
     </header>
-    {panel === "people" && <div className="pp-drawer"><PeoplePicker lang={lang} picked={info.members} onPick={(p) => { void peopleApi.addMember(threadId, p.username || "").then(reloadInfo).catch((e) => setError(e.message)); }} /></div>}
-    {panel === "bots" && <div className="pp-drawer pp-results">{agents.map((a) => {
-      const on = info.bots.some((b) => b.id === a.id);
-      return <button type="button" key={a.id} className="pp-result" data-on={on} disabled={on} onClick={() => { void peopleApi.addBot(threadId, a.id).then(reloadInfo).catch((e) => setError(e.message)); }}><BotAvatar agent={a} size={30} /><span><strong>{a.name}</strong></span>{on && <Check size={16} />}</button>;
-    })}</div>}
-    <div className="pp-messages" ref={scroller}>
-      {messages.map((m) => {
-        const mine = m.sender_id === me;
-        const bot = m.bot_id ? bots.get(m.bot_id) : null;
-        const person = m.sender_id ? people.get(m.sender_id) : null;
-        return <div key={m.id} className="pp-msg" data-mine={mine} data-bot={!!bot}>
-          {!mine && thread?.kind === "group" && (bot ? <BotAvatar agent={botAgent(bot)} size={26} /> : <PersonAvatar person={person} size={26} />)}
-          <div className="pp-bubble" dir="auto">
-            {!mine && thread?.kind === "group" && <span className="pp-sender">{bot ? bot.name : personLabel(person)}</span>}
-            {m.content}
-          </div>
-        </div>;
-      })}
-      {!messages.length && <p className="pp-muted pp-empty">{info.bots.length ? (ar ? "اكتب @ واسم البوت عشان يرد" : "Type @ and a bot's name to ask it") : ar ? "ابدأ الكلام" : "Say hi"}</p>}
+
+    {error && <div className="cx-toast" data-tone="error" role="alert"><span><strong>{error}</strong></span></div>}
+
+    <div className="cx-scroll" ref={scroller}>
+      {!messages.length ? (
+        <div className="cx-empty"><p className="pp-muted">{info.bots.length ? (ar ? "اكتب رسالتك وكل البوتات هترد" : "Send a message and every bot will reply") : ar ? "ابدأ الكلام" : "Say hi"}</p></div>
+      ) : (
+        <div className="cx-column">
+          {messages.map((m, i) => {
+            const mine = m.sender_id === me;
+            const hit = m.bot_id ? bots.get(m.bot_id) : undefined;
+            const person = m.sender_id ? people.get(m.sender_id) : null;
+            const prev = messages[i - 1];
+            const showDay = !prev || new Date(prev.created_at).toDateString() !== new Date(m.created_at).toDateString() || new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() > 3600_000;
+            const time = fmtTime(m.created_at);
+            return <div key={m.id} className="cx-row-wrap">
+              {showDay && <p className="cx-day">{new Date(m.created_at).toDateString() === new Date().toDateString() ? (ar ? "النهارده " : "Today ") : ""}{time}</p>}
+              {mine ? (
+                <div className="cx-row cx-row-user">
+                  <div className="cx-bubble cx-bubble-user" dir="auto">{m.content}</div>
+                  <span className="cx-time">{time}</span>
+                </div>
+              ) : (
+                <div className="cx-row cx-row-agent">
+                  <div className="cx-avatar">{hit ? <BotAvatar agent={hit.agent} size={22} /> : <PersonAvatar person={person} size={22} />}</div>
+                  <div className="cx-agent-body">
+                    {isGroup && <span className="cx-author" dir="auto">{hit ? hit.bot.name : personLabel(person)}</span>}
+                    <div className="cx-bubble cx-bubble-agent" dir="auto">
+                      {hit ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}>{m.content}</ReactMarkdown> : <p style={{ whiteSpace: "pre-wrap" }}>{m.content}</p>}
+                    </div>
+                  </div>
+                  <span className="cx-time">{time}</span>
+                </div>
+              )}
+            </div>;
+          })}
+          {botsBusy > 0 && <div className="cx-working">
+            <span className="cx-stack">{shownBots.map((a) => <BotAvatar key={a.id} agent={a} size={24} state="thinking" />)}</span>
+            <span dir="auto" className="cx-working-text"><span className="cx-shimmer">{ar ? "البوتات بترد…" : "Bots are replying…"}</span></span>
+          </div>}
+        </div>
+      )}
     </div>
-    {error && <p className="pp-error" role="alert">{error}</p>}
-    <div className="pp-composer">
-      {info.bots.length > 0 && text.endsWith("@") && <div className="pp-mentions">{info.bots.map((b) => <button type="button" key={b.id} onClick={() => setText(`${text}${b.name} `)}>@{b.name}</button>)}</div>}
-      <textarea rows={1} dir="auto" value={text} placeholder={ar ? "اكتب رسالة" : "Message"} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); } }} />
-      <button type="button" className="pp-send" aria-label="Send" disabled={!text.trim()} onClick={() => void send()}><ArrowUp size={18} /></button>
+
+    <div className="cx-composer-wrap">
+      {mentionMatches.length > 0 && <div className="cx-mentions" role="listbox">{mentionMatches.map((b) => <button type="button" role="option" key={b.id} onPointerDown={(e) => { e.preventDefault(); pickMention(b.name); }}><BotAvatar agent={bots.get(b.id)?.agent || botAgent(b)} size={26} /><span>{b.name}</span></button>)}</div>}
+      <div className="cx-composer">
+        <textarea
+          ref={textarea}
+          rows={1}
+          dir="auto"
+          value={text}
+          aria-label={ar ? "اكتب رسالة" : "Message"}
+          placeholder={isGroup ? (ar ? "اكتب للجروب…" : "Message the group…") : ar ? `رسالة لـ ${title}` : `Message ${title}`}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (mentionMatches.length && (e.key === "Enter" || e.key === "Tab")) { e.preventDefault(); pickMention(mentionMatches[0].name); return; }
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); }
+          }}
+        />
+        <button type="button" className="cx-circle cx-send" aria-label="Send" disabled={!text.trim()} onClick={() => void send()}><ArrowUp size={18} /></button>
+      </div>
     </div>
+
+    {panel && <>
+      <div className="cx-sheet-scrim" onPointerDown={() => setPanel("")} />
+      <div className="cx-sheet pp-sheet" role="dialog" aria-label={panel === "people" ? (ar ? "ضيف شخص" : "Add person") : (ar ? "ضيف بوت" : "Add bot")}>
+        <span className="cx-grip" />
+        {panel === "people"
+          ? <PeoplePicker lang={lang} picked={info.members} onPick={(p) => { void peopleApi.addMember(threadId, p.username || "").then(reloadInfo).catch((e) => setError(e.message)); }} />
+          : <div className="pp-results">{agents.map((a) => {
+              const on = info.bots.some((b) => b.id === a.id);
+              return <button type="button" key={a.id} className="pp-result" data-on={on} disabled={on} onClick={() => { void peopleApi.addBot(threadId, a.id).then(reloadInfo).catch((e) => setError(e.message)); }}><BotAvatar agent={a} size={30} /><span><strong>{a.name}</strong></span>{on && <Check size={16} />}</button>;
+            })}</div>}
+      </div>
+    </>}
   </section>;
 }

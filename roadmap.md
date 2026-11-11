@@ -1,3 +1,7 @@
+## Group chats — 2026-11-11
+- [x] Group chat looks exactly like the normal bot chat, with every bot of the group in the header.
+- [x] Bots in a group reply on their own without an @mention, and all of them answer (an @mention narrows it; 8 bots max per message). Live reply not tested: no signed-in session available here.
+
 ## Calls, key administration and Vercel — 2026-11-09
 - [x] Import GitHub repository into Vercel; configure Supabase URL/project ID/publishable key and server-role credential in all Vercel environments.
 - [x] Apply atomic one-free-video-session-per-Cairo-day quota and Anam-side 60-second session maximum; disable SDK retries/reuse for a single token.

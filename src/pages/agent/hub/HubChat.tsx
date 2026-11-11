@@ -428,7 +428,7 @@ export function HubChat({
       <header className="cx-head">
         <button type="button" className="cx-circle cx-glass" aria-label={ar ? "رجوع" : "Back"} onClick={onBack}><ChevronLeft size={22} /></button>
         <button type="button" className="cx-title-pill cx-glass" onClick={onProfile}>
-          {group ? <span className="cx-stack">{group.memberIds.slice(0, 4).flatMap((id) => { const member = agents.find((a) => a.id === id); return member ? [<BotAvatar key={member.id} agent={member} size={22} />] : []; })}</span> : <BotAvatar agent={agent} size={24} state="idle" />}
+          {group ? <span className="cx-stack">{group.memberIds.slice(0, 6).flatMap((id) => { const member = agents.find((a) => a.id === id); return member ? [<BotAvatar key={member.id} agent={member} size={22} />] : []; })}{group.memberIds.length > 6 && <span className="cx-stack-more">+{group.memberIds.length - 6}</span>}</span> : <BotAvatar agent={agent} size={24} state="idle" />}
           <strong dir="auto">{title}</strong>
         </button>
         <div className="cx-head-actions" data-calls={!group}>

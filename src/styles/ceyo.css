@@ -516,6 +516,7 @@ html[data-ceyo-surface="bot"] .agent-hub.ceyo-page{--ceyo-page-bg:#1b1b20;--ceyo
 .cx-time{inset-inline-end:-100px}
 .cx-stack{display:flex;align-items:center}
 .cx-stack>*+*{margin-inline-start:-7px}
+.cx-stack-more{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:var(--cx-card2);color:var(--cx-mute);font-size:11px;font-weight:600}
 
 /* Plans */
 .ceyo-plans{position:relative;background:#000}

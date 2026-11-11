@@ -42,3 +42,5 @@
 .pp-mentions { position: absolute; bottom: 100%; inset-inline-start: 12px; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-radius: 14px; background: var(--hub-surface-raised); }
 .pp-mentions button { padding: 6px 10px; border: 0; border-radius: 999px; background: var(--hub-surface); color: var(--hub-ink); cursor: pointer; }
 .hub-list-row-main[data-active="true"] { background: var(--hub-surface-soft); }
+.cx-stack .pp-avatar { box-shadow: 0 0 0 2px var(--cx-card, #262628); }
+.pp-sheet { display: flex; flex-direction: column; gap: 10px; }
