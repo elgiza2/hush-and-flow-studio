@@ -1,4 +1,6 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
+- [ ] Continue with supplied test account: verify actual chat file export/download and browser handoff; investigate scheduler activation without claiming unconfigured automation.
+- [ ] Activate five-minute scheduling and connect requested website accounts: external scheduler authorization/deployed endpoint required; site login/2FA remains account-owner controlled.
 - [x] Implement durable bot browser contexts with human login handoff, minute routines, media preparation and private downloadable artifacts; live provider verification and external blockers documented in docs/AUTONOMOUS-COMPUTER.md.
 - [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
 - [x] Persistent Browserbase contexts per authorized bot, isolated computer controls, temporary login handoff. Actual website logins require the account owner and remain unverified.
