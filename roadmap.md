@@ -444,3 +444,7 @@
 - [x] Plans page: primary button says Subscribe (not Change plan) when user has no paid plan
 - [x] Kashier direct API (card + Vodafone Cash, EGP) for Egypt; Dodo checkout for other countries
 - [x] Instant routine trigger links (webhooks)
+
+## Self-healing long tasks — 2026-11-11
+- [x] Live plan tool, 3-strike same-failure reflection, old tool-output compaction; step limits raised (chat 20, routines 25, background 40).
+- [ ] WhatsApp QR / Telegram code sign-in cards and instant message listeners: next phase.

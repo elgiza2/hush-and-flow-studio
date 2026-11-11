@@ -87,7 +87,7 @@ export const Route = createFileRoute("/api/ceyo-chat")({ server: { handlers: {
           }
           text = blocks.join("\n\n");
         } else {
-          text = await runAgentLoop(system, history, emit, request.signal, poll, { usageOwner: userId, botId: conv.bot_id, chatModel: true, extras: tools, maxSteps: 12 });
+          text = await runAgentLoop(system, history, emit, request.signal, poll, { usageOwner: userId, botId: conv.bot_id, chatModel: true, extras: tools, maxSteps: 20 });
         }
         if (!text.trim() && !events.some((e) => e.type === "agent.tool_result" && ["ask_user", "connect_app", "request_integration_action"].includes(String(e.part && typeof e.part === "object" ? (e.part as Record<string, unknown>).tool_name : "")))) throw new Error("No answer was completed. Please try again.");
         const { error } = await db.from("messages").insert({ id: rid, conversation_id: conv.id, user_id: userId, bot_id: conv.bot_id, role: "assistant", content: text.trim(), metadata: { events: events.filter((e) => e.type.startsWith("agent.tool")), transcript: events } as never });

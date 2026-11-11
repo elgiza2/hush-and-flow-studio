@@ -33,7 +33,7 @@ export async function runJob(jobId: string): Promise<string> {
     const transcript: LoopEvent[] = [];
     const text = await runAgentLoop(
       job.system_prompt + "\nComplete this background task and export produced files. Only perform account actions explicitly authorized in the user's goal. If login is required, hand off and stop. No workspace or integration API actions are available; do not claim them.",
-      [{ role: "user", content: job.goal }], (event) => { if (event.type !== "agent.reasoning") transcript.push(event); }, AbortSignal.timeout(8 * 60000), poll, { usageOwner: job.user_id, botId: job.bot_id, maxSteps: 25 },
+      [{ role: "user", content: job.goal }], (event) => { if (event.type !== "agent.reasoning") transcript.push(event); }, AbortSignal.timeout(8 * 60000), poll, { usageOwner: job.user_id, botId: job.bot_id, maxSteps: 40 },
     );
     if (!text.trim()) throw new Error("No completed answer");
     const { error } = await db.from("messages").upsert(
