@@ -433,7 +433,7 @@ export function buildTranscript(events: RawEvent[], lang: Lang, running: boolean
           }
         }
         if (n.includes("update_plan")) {
-          const plan: Card = { kind: "plan", id: "plan", title: firstText(ca.title, ca.name), steps: Array.isArray(ca.steps) ? ca.steps : [] };
+          const plan: Card = { kind: "plan", id: "plan", title: firstText(ca.title, ca.name), steps: Array.isArray(ca.steps) ? ca.steps.map((st: unknown) => typeof st === "string" ? { title: st.replace(/^\s*\[(x|X| )\]\s*/, ""), status: /^\s*\[(x|X)\]/.test(st) ? "done" : "pending" } : st) : [] };
           const i = t.cards.findIndex((c) => c.kind === "plan");
           if (i >= 0) t.cards[i] = plan;
           else t.cards.unshift(plan);
