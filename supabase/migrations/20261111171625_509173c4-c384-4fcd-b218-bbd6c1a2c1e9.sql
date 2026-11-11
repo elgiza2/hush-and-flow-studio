@@ -1,0 +1,1 @@
+CREATE POLICY browser_contexts_server_only ON public.agent_browser_contexts FOR ALL TO authenticated USING(false) WITH CHECK(false);
