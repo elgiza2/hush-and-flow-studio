@@ -1,4 +1,5 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
+- [ ] User chose Lovable publishing instead of Vercel: check security, publish current app, configure approved private scheduler and verify its live callback before enabling.
 - [x] Supplied test account: actual UI sign-in, run_code/export_file and chat CSV download verified with concrete contents. GitHub scheduler access investigated: repository pull only, no push/admin, Secrets/Actions configuration denied with 403.
 - [x] Resolve scheduler repository access: user approved a separate private repository; created elgizaiiio/ceyo-private-scheduler, installed the five-minute workflow, verified Secrets public-key access and ability to manage the workflow.
 - [ ] Activate five-minute scheduling: web.ceyo.si returns hosting HTTP 402 DEPLOYMENT_DISABLED. Workflow deliberately disabled until an approved live deployment and encrypted secret/URL setup; successful callback and scheduled run readback still required.
