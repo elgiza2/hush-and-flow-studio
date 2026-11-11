@@ -447,4 +447,5 @@
 
 ## Self-healing long tasks — 2026-11-11
 - [x] Live plan tool, 3-strike same-failure reflection, old tool-output compaction; step limits raised (chat 20, routines 25, background 40).
-- [ ] WhatsApp QR / Telegram code sign-in cards and instant message listeners: next phase.
+- [x] Browser show_user: screenshot card in chat so the user scans WhatsApp/Telegram Web QR; session saved in the bot browser. Live scan unverified.
+- [ ] Instant inbound-message listeners for WhatsApp/Telegram: need an always-on worker; currently 5-minute routines.

@@ -1,6 +1,7 @@
 import { getProviderKey } from "@/lib/keys/providerKey";
 import { browserAction, publicBrowserUrl } from "./browserRules";
 import type { Computer } from "./e2b.server";
+import { exportArtifact } from "./artifacts.server";
 
 const API = "https://api.browserbase.com/v1";
 export function createBotBrowser(userId: string, botId: string, computer: Computer) {
@@ -54,12 +55,17 @@ export function createBotBrowser(userId: string, botId: string, computer: Comput
       const current = await open();
       const payload = JSON.stringify({ ...input, connect: current.connectUrl });
       // Provider credentials are passed only to the isolated computer, never emitted in chat.
-      const result = await computer.run(`import json\nfrom playwright.async_api import async_playwright\na=json.loads(${JSON.stringify(payload)})\nasync with async_playwright() as p:\n b=await p.chromium.connect_over_cdp(a['connect'])\n c=b.contexts[0]\n page=c.pages[0] if c.pages else await c.new_page()\n if a['action'] in ['navigate','login']: await page.goto(a['url'], wait_until='domcontentloaded', timeout=30000)\n elif a['action']=='click': await page.locator(a['selector']).first.click(timeout=10000)\n elif a['action']=='fill': await page.locator(a['selector']).first.fill(a.get('value',''),timeout=10000)\n elif a['action']=='press': await page.locator(a['selector']).first.press(a.get('value','Enter'),timeout=10000)\n elif a['action']=='click_at': await page.mouse.click(a['x'],a['y'])\n elif a['action']=='type_text': await page.keyboard.type(a.get('value',''),delay=40)\n if a['action'] in ['click_at','type_text']: await page.wait_for_timeout(1200)\n if a['action']=='look':\n  import base64\n  await page.set_viewport_size({'width':1280,'height':800})\n  shot=await page.screenshot(type='jpeg',quality=60)\n  print(json.dumps({'url':page.url,'shot':base64.b64encode(shot).decode()}))\n  await b.close()\n  raise SystemExit\n print(json.dumps({'url':page.url,'text':(await page.locator('body').inner_text())[:12000],'controls':await page.locator('input,button,a,textarea,select').evaluate_all("els => els.slice(0,80).map(e => ({tag:e.tagName,id:e.id,name:e.name,type:e.type,text:(e.innerText||e.getAttribute('aria-label')||'').slice(0,100)}))")},ensure_ascii=False))\n await b.close()`, "python", 60000);
+      const result = await computer.run(`import json\nfrom playwright.async_api import async_playwright\na=json.loads(${JSON.stringify(payload)})\nasync with async_playwright() as p:\n b=await p.chromium.connect_over_cdp(a['connect'])\n c=b.contexts[0]\n page=c.pages[0] if c.pages else await c.new_page()\n if a['action'] in ['navigate','login']: await page.goto(a['url'], wait_until='domcontentloaded', timeout=30000)\n elif a['action']=='click': await page.locator(a['selector']).first.click(timeout=10000)\n elif a['action']=='fill': await page.locator(a['selector']).first.fill(a.get('value',''),timeout=10000)\n elif a['action']=='press': await page.locator(a['selector']).first.press(a.get('value','Enter'),timeout=10000)\n elif a['action']=='click_at': await page.mouse.click(a['x'],a['y'])\n elif a['action']=='type_text': await page.keyboard.type(a.get('value',''),delay=40)\n if a['action'] in ['click_at','type_text']: await page.wait_for_timeout(1200)\n if a['action']=='show_user':\n  await page.wait_for_timeout(2500)\n  await page.screenshot(path='/home/user/screen.png')\n  print(json.dumps({'url':page.url,'saved':True}))\n  await b.close()\n  raise SystemExit\n if a['action']=='look':\n  import base64\n  await page.set_viewport_size({'width':1280,'height':800})\n  shot=await page.screenshot(type='jpeg',quality=60)\n  print(json.dumps({'url':page.url,'shot':base64.b64encode(shot).decode()}))\n  await b.close()\n  raise SystemExit\n print(json.dumps({'url':page.url,'text':(await page.locator('body').inner_text())[:12000],'controls':await page.locator('input,button,a,textarea,select').evaluate_all("els => els.slice(0,80).map(e => ({tag:e.tagName,id:e.id,name:e.name,type:e.type,text:(e.innerText||e.getAttribute('aria-label')||'').slice(0,100)}))")},ensure_ascii=False))\n await b.close()`, "python", 60000);
       if (!result.ok) throw new Error("Browser action failed. Observe again before repeating any write action.");
       if (input.action === "look") {
         const shot = JSON.parse(result.output.trim().split("\n").pop() || "{}") as { url?: string; shot?: string };
         if (!shot.shot) throw new Error("Could not capture the page");
         return JSON.stringify({ url: shot.url, view: await describeScreen(shot.shot, input.question) });
+      }
+      if (input.action === "show_user") {
+        // Shows the user the live screen (e.g. WhatsApp/Telegram Web QR) so they scan it with their own phone.
+        const card = JSON.parse(await exportArtifact(computer, userId, { path: "/home/user/screen.png", name: "screen.png", mime: "image/png" }));
+        return JSON.stringify({ ...card, instruction: "Screenshot is shown to the user. If it is a login QR, tell them to scan it from their phone app (WhatsApp: Linked devices; Telegram: Settings > Devices) within a minute, then reply 'done'. Then STOP and wait; afterwards use look to confirm sign-in." });
       }
       if (input.action === "login") {
         const debug = await api(current.key, `/sessions/${current.id}/debug`);
