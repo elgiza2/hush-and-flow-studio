@@ -18,6 +18,8 @@ Activation attempt on 2026-11-11: conversation-only GitHub connection has `pull:
 
 Reconnect was completed and re-tested: Secrets still returns 403. `/user` identifies the connected account as `elgizaiiio`, not original repository owner `elgiza2`. Do not loop reconnect or change app permissions to work around this. Obtain owner access or explicit approval for a separate private scheduler repository under the connected account.
 
+The user approved a separate private repository. Created `elgizaiiio/ceyo-private-scheduler` (201), wrote `.github/workflows/agent-routines.yml` (201), verified repository Secrets public-key access (200), then deliberately disabled the workflow (204, readback `disabled_manually`). The published `web.ceyo.si` callback returns hosting HTTP 402 `DEPLOYMENT_DISABLED`; a preview unsigned callback returns 401, not evidence of a production deployment. Repository access is resolved. Activation still needs an approved live deployment, encrypted secret/URL configuration and successful callback/scheduled-run readback. Do not enable against a stopped site or advertise activation.
+
 ## Limitations
 Recurring work consumes existing usage allowance and provider resources; free allowance can stop it well before a full day. No unlimited autonomous operation is promised. Websites can expire logins or require human verification; bots never bypass CAPTCHA/2FA or site rules. Instagram/WhatsApp/Shopify operations still require authorized accounts and successful website/API responses. Browser and media libraries install lazily and may fail due to provider/package availability; failures must remain visible. Large videos require compression or a larger separately reviewed delivery design.
 
