@@ -14,6 +14,7 @@ describe("telegram provider routing", () => {
     expect(normalizeProvider("cerebras")).toBe("cerebras");
     expect(normalizeProvider("composio")).toBe("composio");
     expect(normalizeProvider("browserbase")).toBe("browserbase");
+    expect(normalizeProvider("e2b")).toBe("e2b");
     expect(normalizeProvider("agentsky")).toBeNull();
   });
 

@@ -15,11 +15,12 @@ const TOOLS = [
   {
     name: "run_code",
     description:
-      "Execute JavaScript in a sandbox and return stdout/logs. Use for calculations, data transforms, parsing, validation, and any computation. Python/SQL logic: express as equivalent JavaScript.",
+      "Run code on an isolated cloud computer (Python with pandas/pillow, JavaScript or bash) and return printed output. Use for calculations, data transforms, parsing, files and validation.",
     inputSchema: {
       type: "object",
       properties: {
-        code: { type: "string", description: "JavaScript program to run" },
+        code: { type: "string", description: "Program to run; print what you need" },
+        language: { type: "string", enum: ["python", "javascript", "bash"], description: "Default javascript" },
         timeout_ms: { type: "number", description: "Max wait, default 15000" },
       },
       required: ["code"],
@@ -353,6 +354,7 @@ async function runTool(userId: string, origin: string, name: string, args: any, 
         const out = await runSandboxCode(
           code,
           Math.min(Math.max(Number(args?.timeout_ms) || 15_000, 1000), 60_000),
+          args?.language,
         );
         return {
           text: out.ok ? `Output:\n${out.output}` : `Failed, try another approach:\n${out.output}`,

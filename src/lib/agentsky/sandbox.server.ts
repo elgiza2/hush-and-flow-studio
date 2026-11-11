@@ -18,12 +18,15 @@ function isBlockedHost(host: string): boolean {
   );
 }
 
-/** Fail closed until a real remote execution service is connected. */
+/** Runs model code on the isolated E2B cloud computer; fails closed without a key. */
 export async function runSandboxCode(
-  _code: string,
-  _timeoutMs = 15_000,
+  code: string,
+  timeoutMs = 15_000,
+  language: unknown = "javascript",
 ): Promise<{ ok: boolean; output: string }> {
-  return { ok: false, output: "Code execution is unavailable: an isolated computer service must be connected." };
+  const { runOnce } = await import("@/lib/computer/e2b.server");
+  const { normalizeLanguage } = await import("@/lib/computer/execution");
+  return runOnce(code, normalizeLanguage(language), timeoutMs);
 }
 
 export async function serverWebFetch(rawUrl: string): Promise<{ ok: boolean; output: string }> {

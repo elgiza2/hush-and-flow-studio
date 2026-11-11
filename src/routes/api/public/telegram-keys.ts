@@ -1,4 +1,4 @@
-/** Telegram bot for the app's service keys (Cerebras / Browserbase / Composio).
+/** Telegram bot for the app's service keys (Cerebras / Browserbase / Composio / E2B).
  *  Only Telegram (verified by the webhook secret header) can call it, and only
  *  the configured owner account can add, list or remove keys. Keys go to the
  *  server-only `provider_api_keys` pool that the app reads at runtime.
@@ -20,11 +20,12 @@ export function telegramAdminIds(config: string | undefined): number[] {
   return (config ?? "").split(",").map((v) => v.trim()).filter((v) => /^[1-9]\d*$/.test(v)).map(Number).filter(Number.isSafeInteger);
 }
 
-type ProviderId = "cerebras" | "browserbase" | "composio";
+type ProviderId = "cerebras" | "browserbase" | "composio" | "e2b";
 const PROVIDERS: Record<ProviderId, { label: string; icon: string; use: string }> = {
   cerebras: { label: "Cerebras", icon: "🧠", use: "ردود الوكلاء" },
   browserbase: { label: "Browserbase", icon: "🌐", use: "الكمبيوتر وتصفح الويب" },
   composio: { label: "Composio", icon: "🔌", use: "التكاملات الخارجية" },
+  e2b: { label: "E2B", icon: "💻", use: "كمبيوتر تشغيل الأكواد والملفات" },
 };
 const IDS = Object.keys(PROVIDERS) as ProviderId[];
 
@@ -33,6 +34,7 @@ export function normalizeProvider(raw: string): ProviderId | null {
   if (v === "cerebras" || v === "c") return "cerebras";
   if (v === "browserbase" || v === "browser" || v === "b") return "browserbase";
   if (v === "composio" || v === "x") return "composio";
+  if (v === "e2b" || v === "computer") return "e2b";
   return null;
 }
 
@@ -43,7 +45,9 @@ async function validateKey(p: ProviderId, key: string): Promise<boolean> {
         ? await fetch("https://api.cerebras.ai/v1/models", { headers: { Authorization: `Bearer ${key}` } })
         : p === "browserbase"
           ? await fetch("https://api.browserbase.com/v1/projects", { headers: { "X-BB-API-Key": key } })
-          : await fetch("https://backend.composio.dev/api/v3/auth_configs?limit=1", { headers: { "x-api-key": key } });
+          : p === "e2b"
+            ? await fetch("https://api.e2b.app/sandboxes", { headers: { "X-API-Key": key } })
+            : await fetch("https://backend.composio.dev/api/v3/auth_configs?limit=1", { headers: { "x-api-key": key } });
     return res.ok;
   } catch {
     return false;
@@ -59,6 +63,7 @@ const HELP = [
   "<code>/add_cerebras KEY</code>",
   "<code>/add_browserbase KEY</code>",
   "<code>/add_composio KEY</code>",
+  "<code>/add_e2b KEY</code>",
   "",
   "/keys — عرض المفاتيح",
   "/del رقم — حذف مفتاح",

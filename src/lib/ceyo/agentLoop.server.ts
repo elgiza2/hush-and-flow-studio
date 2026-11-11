@@ -2,6 +2,8 @@ import { getCerebrasKeys, markCerebrasFailure, markCerebrasUse, type CerebrasKey
 import { canUseAuthorizedBackup, classifyProviderFailure } from "./providerFailover";
 import { getProviderKey } from "@/lib/keys/providerKey";
 import { replyLanguageInstruction } from "./replyLanguage";
+import { createComputer, type Computer } from "@/lib/computer/e2b.server";
+import { normalizeLanguage } from "@/lib/computer/execution";
 /** @doc Bot reply loop: Cerebras streams the answer and may call web tools (Browserbase) several times before it finishes. */
 const CEREBRAS_URL = "https://api.cerebras.ai/v1/chat/completions";
 /** Cheapest + fastest model on Cerebras. */
@@ -28,6 +30,22 @@ const tools = [
       parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "run_code",
+      description:
+        "Run code on your own isolated cloud computer (Linux, Python 3 with pandas/numpy/pillow/matplotlib, Node.js, bash). Files and variables persist for the rest of this task. Use it for calculations, data work, parsing, files and checking facts — print the results you need.",
+      parameters: {
+        type: "object",
+        properties: {
+          code: { type: "string", description: "Program to run; print what you need" },
+          language: { type: "string", enum: ["python", "javascript", "bash"], description: "Default python" },
+        },
+        required: ["code"],
+      },
+    },
+  },
 ];
 
 async function bbFetch(url: string): Promise<string> {
@@ -51,7 +69,15 @@ const strip = (html: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-async function runTool(name: string, args: any): Promise<string> {
+async function runTool(name: string, args: any, computer: Computer): Promise<string> {
+  if (name === "run_code") {
+    const code = String(args.code ?? "").trim();
+    if (!code) return "Missing code.";
+    if (code.length > 50_000) return "Code too long (max 50k chars). Split it.";
+    const out = await computer.run(code, normalizeLanguage(args.language));
+    if (!out.ok) throw new Error(`Code failed, fix it or try another approach:\n${out.output}`);
+    return out.output;
+  }
   if (name === "web_search") {
     const html = await bbFetch("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(String(args.query ?? "")));
     const out: string[] = [];
@@ -132,7 +158,9 @@ export async function runAgentLoop(
   let answer = "";
   const turn = crypto.randomUUID().slice(0, 8);
   const usageRun = crypto.randomUUID();
+  const computer = createComputer();
 
+  try {
   for (let step = 0; step < maxSteps; step++) {
     signal.throwIfAborted();
     // Refresh after user steering; append after specialization and saved context.
@@ -212,7 +240,7 @@ export async function runAgentLoop(
       emit({ id: `${c.id}-call`, type: "agent.tool_use", part: { type: "tool_call", call_id: c.id, tool_name: c.name, args } });
       let result: string;
       let status = "ok";
-      try { const extra = extras.find((extra) => extra.name === c.name); result = extra ? await extra.run(args) : await runTool(c.name, args); } catch (e) { result = e instanceof Error ? e.message : "Tool failed"; status = "error"; }
+      try { const extra = extras.find((extra) => extra.name === c.name); result = extra ? await extra.run(args) : await runTool(c.name, args, computer); } catch (e) { result = e instanceof Error ? e.message : "Tool failed"; status = "error"; }
       emit({ id: `${c.id}-res`, type: "agent.tool_result", part: { type: "tool_result", call_id: c.id, tool_name: c.name, status, result: result.slice(0, 30000) } });
       messages.push({ role: "tool", tool_call_id: c.id, content: result });
       if (status === "ok" && (c.name === "ask_user" || c.name === "connect_app" || c.name === "request_integration_action")) return answer;
@@ -220,4 +248,7 @@ export async function runAgentLoop(
     if (redirected) continue;
   }
   throw new Error("The task reached its step limit before completing. Saved tool results remain available; ask to continue.");
+  } finally {
+    void computer.close();
+  }
 }
