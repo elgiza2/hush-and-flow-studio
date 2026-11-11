@@ -161,7 +161,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
         // Remove the message that carried a key from the chat history.
         const dropMessage = () => tg("deleteMessage", { chat_id: chatId, message_id: msg.message_id }).catch(() => undefined);
 
-        const add = text.match(/^\/add_([a-z]+)(?:@\w+)?\s+(\S+)$/i);
+        const add = text.match(/^\/add_([a-z0-9]+)(?:@\w+)?\s+(\S+)$/i);
         const del = text.match(/^\/del(?:@\w+)?\s+(\d+)$/i);
         if (add) {
           const p = normalizeProvider(add[1]);

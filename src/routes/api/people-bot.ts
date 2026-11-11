@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { botsToAnswer } from "@/lib/people/mentions";
-import { replyLanguageInstruction } from "@/lib/ceyo/replyLanguage";
+import { runAgentLoop } from "@/lib/ceyo/agentLoop.server";
+import { isUsageExhausted } from "@/lib/ceyo/usage";
 
 const input = z.object({ threadId: z.string().uuid(), messageId: z.string().uuid() });
 const noStore = { "Cache-Control": "no-store" };
@@ -22,9 +23,6 @@ async function handle(request: Request) {
   const bots = botsToAnswer(msg.content, (info?.bots || []) as { id: string; name: string }[]);
   if (!bots.length) return Response.json({ replied: 0 }, { headers: noStore });
 
-  const { getProviderKey } = await import("@/lib/keys/providerKey");
-  const key = await getProviderKey("cerebras");
-  if (!key) return Response.json({ error: "The reply model is not configured" }, { status: 503, headers: noStore });
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: recent } = await auth.db.from("people_messages").select("sender_id,bot_id,content,created_at").eq("thread_id", threadId).order("created_at", { ascending: false }).limit(20);
   const members = (info?.members || []) as { id: string; username: string | null; displayName: string | null }[];
@@ -37,22 +35,20 @@ async function handle(request: Request) {
   for (const bot of bots) {
     const { data: full } = await supabaseAdmin.from("bots").select("id,name,instructions").eq("id", bot.id).maybeSingle();
     if (!full) continue;
-    try { await (await import("@/lib/ceyo/usage.server")).chargeUsage(auth.userId, `people:${messageId}:${bot.id}`); }
-    catch (error) { return Response.json({ error: error instanceof Error ? error.message : "Could not check usage" }, { status: 402, headers: noStore }); }
-    const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-      method: "POST", signal: request.signal,
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-oss-120b", reasoning_effort: "low", max_completion_tokens: 1200,
-        messages: [
-          { role: "system", content: `You are ${full.name}, one of several bots taking part in a group chat with real people.\n${full.instructions || ""}\nReply briefly from your own role. Other bots may already have answered in the chat above: add something new instead of repeating them. Do not prefix your reply with your name.\n${replyLanguageInstruction([{ role: "user", content: msg.content }])}` },
-          { role: "user", content: `Recent chat (context only):\n${lines.join("\n")}` },
-          { role: "user", content: msg.content },
-        ],
-      }),
-    });
-    if (!res.ok) continue;
-    const text = String((await res.json())?.choices?.[0]?.message?.content || "").trim();
+    // Same loop as one-to-one chats: web tools plus the bot's own cloud computer.
+    const system = `You are ${full.name}, one of several bots taking part in a group chat with real people.\n${full.instructions || ""}\nReply briefly from your own role. Other bots may already have answered in the chat above: add something new instead of repeating them. Do not prefix your reply with your name. Use your tools (web search, reading pages, run_code on your cloud computer) when the message needs fresh facts, calculations or files; claim you ran something only after a successful tool result.`;
+    let text = "";
+    try {
+      text = (await runAgentLoop(system, [
+        { role: "user", content: `Recent chat (context only):\n${lines.join("\n")}` },
+        { role: "user", content: msg.content },
+      ], () => {}, request.signal, async () => [], { usageOwner: auth.userId, maxSteps: 5 })).trim();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (isUsageExhausted(message) || message.startsWith("Could not check usage")) return Response.json({ error: message }, { status: 402, headers: noStore });
+      if (message === "AI is not configured") return Response.json({ error: "The reply model is not configured" }, { status: 503, headers: noStore });
+      continue;
+    }
     if (!text) continue;
     const { error } = await supabaseAdmin.from("people_messages").insert({ thread_id: threadId, bot_id: full.id, sender_id: null, content: text.slice(0, 8000) });
     if (!error) { replied++; lines.push(`${full.name}: ${text}`); }

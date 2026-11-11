@@ -1,3 +1,10 @@
+## Cloud computer (Grok-Bot style) — 2026-11-11
+- [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
+- [ ] Next: persistent logged-in browser sessions per bot (Browserbase contexts) so bots stay signed in to sites.
+- [ ] Next: short-interval routines (e.g. every 5 minutes) — current routines are daily/weekly only.
+- [ ] Next: media tools on the computer (ffmpeg is not in the default image) and returning produced files/images into chat.
+- [ ] Rotate the E2B key later: it was shared in chat.
+
 ## Group chats — 2026-11-11
 - [x] Match home group rows to regular chats with compact member-bot avatars; isolated mobile/desktop review and group opening passed, 6 existing tests passed. Real-account session unavailable.
 - [x] Group chat looks exactly like the normal bot chat, with every bot of the group in the header.
