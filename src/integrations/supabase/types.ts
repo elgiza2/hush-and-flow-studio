@@ -61,6 +61,83 @@ export type Database = {
           },
         ]
       }
+      agent_artifacts: {
+        Row: {
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          size_bytes: number
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime: string
+          name: string
+          size_bytes: number
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          size_bytes?: number
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_browser_contexts: {
+        Row: {
+          bot_id: string
+          context_id: string | null
+          created_at: string
+          id: string
+          lease_token: string | null
+          lease_until: string | null
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          project_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          project_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_browser_contexts_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: true
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_calls: {
         Row: {
           bot_id: string | null
@@ -284,6 +361,7 @@ export type Database = {
           goal: string
           id: string
           interval_hours: number
+          interval_minutes: number | null
           last_error: string | null
           last_result: string | null
           lease_until: string | null
@@ -299,6 +377,7 @@ export type Database = {
           goal: string
           id?: string
           interval_hours: number
+          interval_minutes?: number | null
           last_error?: string | null
           last_result?: string | null
           lease_until?: string | null
@@ -314,6 +393,7 @@ export type Database = {
           goal?: string
           id?: string
           interval_hours?: number
+          interval_minutes?: number | null
           last_error?: string | null
           last_result?: string | null
           lease_until?: string | null
@@ -1188,6 +1268,26 @@ export type Database = {
         Args: { p_operation_key: string; p_user_id: string }
         Returns: Json
       }
+      claim_agent_browser: {
+        Args: { p_bot: string; p_token: string; p_user: string }
+        Returns: {
+          bot_id: string
+          context_id: string | null
+          created_at: string
+          id: string
+          lease_token: string | null
+          lease_until: string | null
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "agent_browser_contexts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_agent_routines: {
         Args: never
         Returns: {
@@ -1197,6 +1297,7 @@ export type Database = {
           goal: string
           id: string
           interval_hours: number
+          interval_minutes: number | null
           last_error: string | null
           last_result: string | null
           lease_until: string | null
