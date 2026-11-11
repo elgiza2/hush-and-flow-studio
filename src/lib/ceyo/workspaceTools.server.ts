@@ -77,6 +77,12 @@ export function workspaceTools(ctx: Context): AgentTool[] {
     const { id } = z.object({ id: z.string().uuid() }).parse(args);
     return JSON.stringify(checked(await db.from("agent_documents").select("name,mime,content").eq("id", id).eq("user_id", userId).single()));
   });
+  add("routine_trigger_link", "Get an instant trigger link for one of the user's routines. Paste it as a webhook URL in Shopify/forms/Zapier so a new order or message runs the routine immediately. Keep it private.", { id: { type: "string" } }, ["id"], async (args: { id: string }) => {
+    const row = checked(await db.from("agent_routines").select("id").eq("id", String(args.id)).eq("user_id", userId).single());
+    const secret = process.env.LOVABLE_CRON_SECRET; if (!secret) throw new Error("Instant triggers are not configured");
+    const { routineHookSignature } = await import("@/lib/ceyo/routineHook");
+    return JSON.stringify({ url: `https://hush-and-flow-studio.lovable.app/api/public/ceyo-hook/${row.id}/${await routineHookSignature(secret, row.id)}`, method: "POST" });
+  });
   add("list_routines", "List the user's saved routines, intervals and execution errors.", {}, [], async () => JSON.stringify(checked(await db.from("agent_routines").select("id,title,goal,interval_minutes,interval_hours,active,next_run_at,last_error").eq("user_id", userId))));
   add("create_routine", "Save a recurring task, including every 5 minutes (interval_minutes:5), daily (interval_hours:24) or weekly (168). User goal is the authorization boundary: never add external actions. Execution needs a configured external scheduler; do not claim it runs until configured. Explain recurring usage costs.", { title: str, goal: str, interval_hours: { type: "integer", enum: [24, 168] }, interval_minutes: { type: "integer", minimum: 5, maximum: 10080 } }, ["title", "goal"], async (args) => {
     const input = routineInput.parse(args);

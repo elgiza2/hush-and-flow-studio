@@ -60,6 +60,7 @@ import { Route as ApiPublicTelegramKeysRouteImport } from './routes/api/public/t
 import { Route as ApiPublicTelnyxVoiceRouteImport } from './routes/api/public/telnyx-voice'
 import { Route as ApiPublicAgentToolsTokenRouteImport } from './routes/api/public/agent-tools.$token'
 import { Route as ApiPublicMediaStatusRunIdRouteImport } from './routes/api/public/media-status.$runId'
+import { Route as ApiPublicCeyoHookRoutineIdSigRouteImport } from './routes/api/public/ceyo-hook.$routineId.$sig'
 import { Route as ApiPublicMediaRunIdIndexRouteImport } from './routes/api/public/media.$runId.$index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -319,6 +320,12 @@ const ApiPublicMediaStatusRunIdRoute =
     path: '/api/public/media-status/$runId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCeyoHookRoutineIdSigRoute =
+  ApiPublicCeyoHookRoutineIdSigRouteImport.update({
+    id: '/api/public/ceyo-hook/$routineId/$sig',
+    path: '/api/public/ceyo-hook/$routineId/$sig',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicMediaRunIdIndexRoute =
   ApiPublicMediaRunIdIndexRouteImport.update({
     id: '/api/public/media/$runId/$index',
@@ -378,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
   '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
   '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
   '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -432,6 +440,7 @@ export interface FileRoutesByTo {
   '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
   '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
   '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
   '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesById {
@@ -487,6 +496,7 @@ export interface FileRoutesById {
   '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
   '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
   '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
   '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -543,6 +553,7 @@ export interface FileRouteTypes {
     | '/api/public/telnyx-voice'
     | '/api/public/agent-tools/$token'
     | '/api/public/media-status/$runId'
+    | '/api/public/ceyo-hook/$routineId/$sig'
     | '/api/public/media/$runId/$index'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -597,6 +608,7 @@ export interface FileRouteTypes {
     | '/api/public/telnyx-voice'
     | '/api/public/agent-tools/$token'
     | '/api/public/media-status/$runId'
+    | '/api/public/ceyo-hook/$routineId/$sig'
     | '/api/public/media/$runId/$index'
   id:
     | '__root__'
@@ -651,6 +663,7 @@ export interface FileRouteTypes {
     | '/api/public/telnyx-voice'
     | '/api/public/agent-tools/$token'
     | '/api/public/media-status/$runId'
+    | '/api/public/ceyo-hook/$routineId/$sig'
     | '/api/public/media/$runId/$index'
   fileRoutesById: FileRoutesById
 }
@@ -706,6 +719,7 @@ export interface RootRouteChildren {
   ApiPublicTelnyxVoiceRoute: typeof ApiPublicTelnyxVoiceRoute
   ApiPublicAgentToolsTokenRoute: typeof ApiPublicAgentToolsTokenRoute
   ApiPublicMediaStatusRunIdRoute: typeof ApiPublicMediaStatusRunIdRoute
+  ApiPublicCeyoHookRoutineIdSigRoute: typeof ApiPublicCeyoHookRoutineIdSigRoute
   ApiPublicMediaRunIdIndexRoute: typeof ApiPublicMediaRunIdIndexRoute
 }
 
@@ -1068,6 +1082,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMediaStatusRunIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ceyo-hook/$routineId/$sig': {
+      id: '/api/public/ceyo-hook/$routineId/$sig'
+      path: '/api/public/ceyo-hook/$routineId/$sig'
+      fullPath: '/api/public/ceyo-hook/$routineId/$sig'
+      preLoaderRoute: typeof ApiPublicCeyoHookRoutineIdSigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/media/$runId/$index': {
       id: '/api/public/media/$runId/$index'
       path: '/api/public/media/$runId/$index'
@@ -1130,6 +1151,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTelnyxVoiceRoute: ApiPublicTelnyxVoiceRoute,
   ApiPublicAgentToolsTokenRoute: ApiPublicAgentToolsTokenRoute,
   ApiPublicMediaStatusRunIdRoute: ApiPublicMediaStatusRunIdRoute,
+  ApiPublicCeyoHookRoutineIdSigRoute: ApiPublicCeyoHookRoutineIdSigRoute,
   ApiPublicMediaRunIdIndexRoute: ApiPublicMediaRunIdIndexRoute,
 }
 export const routeTree = rootRouteImport

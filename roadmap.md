@@ -443,4 +443,4 @@
 
 - [x] Plans page: primary button says Subscribe (not Change plan) when user has no paid plan
 - [x] Kashier direct API (card + Vodafone Cash, EGP) for Egypt; Dodo checkout for other countries
-- [ ] Instant webhooks (Shopify/Instagram) — needs per-account signing secrets from the user
+- [x] Instant routine trigger links (webhooks)
