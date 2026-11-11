@@ -1,0 +1,5 @@
+- Active chat, inline specialists and text summaries use the shared Cerebras Chat Completions adapter and active provider-key pool. Do not route text generation through Lovable AI Gateway.
+- Speech-to-text and other audio/media operations remain on their dedicated provider integrations unless Cerebras explicitly supports the required audio API; do not confuse an audio gateway or Git connector with text-model inference.
+- Shared usage availability checks use the caller's owner-scoped client before provider-token access; costly discrete audio/vision operations also debit atomically. Why: exhausted accounts must not bypass chat limits through media endpoints; token gating is not continuous-session metering.
+- Recompute replyLanguageInstruction from the latest user message at each agent-loop step, after persona and saved context; people-bot uses the invoking member's message. Why: language switches, tool outputs and other participants must not override the current user's language or dialect.
+- Cerebras tool calls use the existing OpenAI-compatible SSE parser with `reasoning_effort: "low"`, matching the working agent-loop request shape.

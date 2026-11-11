@@ -604,24 +604,6 @@ export type Database = {
           },
         ]
       }
-      free_video_call_daily_usage: {
-        Row: {
-          call_day: string
-          created_at: string
-          user_id: string
-        }
-        Insert: {
-          call_day?: string
-          created_at?: string
-          user_id: string
-        }
-        Update: {
-          call_day?: string
-          created_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       messages: {
         Row: {
           bot_id: string | null
@@ -1243,7 +1225,6 @@ export type Database = {
       people_thread_info: { Args: { p_thread: string }; Returns: Json }
       read_agentsky_api_key: { Args: never; Returns: string }
       read_telegram_bot_token: { Args: never; Returns: string }
-      reserve_free_video_call_minute: { Args: never; Returns: Json }
       save_bot_group: {
         Args: {
           p_category?: string
