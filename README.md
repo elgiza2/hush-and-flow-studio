@@ -270,6 +270,9 @@ bunx vitest run
 انظر `roadmap.md` لحالة الطلب الحالي؛ الأقسام التاريخية فيه ليست قائمة حقائق حديثة وقد تتعارض بسبب نقل المساحات والخدمات.
 
 ## Current work
+### Home group rows — 2026-11-11
+- Bot groups and mixed people/bot groups use compact member portraits in the same 36px slot as regular chat avatars; row spacing, titles and message previews retain the normal chat styling. Existing authorized thread-info reads supply bot portraits; chat behavior is unchanged.
+- Verification: isolated actual-component rendering at 434×716 and 1280×1800 confirmed identical 51.5px row heights and title alignment, three bot portraits in mixed groups, and normal group opening. Six existing avatar/group-storage tests pass and preview build is OK. No page errors; sample-session background requests returned 400, so this is presentation verification only, not a real-account check (external unmanaged session unavailable).
 ### Group chats — 2026-11-11
 - People/bot groups (`PeopleChat`) now reuse the normal chat layout (`cx-*`): glass header pill with every group bot's avatar stacked (6 shown, then +N), agent-style bubbles with author names, markdown for bot replies, the floating composer, and add-person/add-bot/leave in the header menu.
 - Bots no longer need an @mention: `/api/people-bot` lets every bot in the chat answer each member message (an @mention narrows it to the named bots; at most 8 per message). Each bot sees earlier bots' replies so it does not repeat them. A "Bots are replying…" indicator shows while they answer.

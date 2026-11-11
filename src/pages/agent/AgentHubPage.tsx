@@ -35,7 +35,7 @@ import { HubChat } from "./hub/HubChat";
 import { NewPeopleChat, PeopleChat, PeopleSection } from "./hub/people/People";
 import { setBotLook } from "./hub/botLooks";
 import { AgentForm, GroupForm, ProfilePanel, SearchOverlay, type AgentFormValue } from "./hub/HubPanels";
-import { BotAvatar, GroupAvatar, HubIconButton, type HubLang } from "./hub/HubParts";
+import { BotAvatar, GroupRowAvatar, HubIconButton, type HubLang } from "./hub/HubParts";
 import {
   EMPTY_HUB_LOCAL,
   groupPrompt,
@@ -327,7 +327,7 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
     return (
       <div className="hub-list-row" key={key}>
         <button type="button" className="hub-list-row-main" {...pressProps("group", group.id)} data-unread={isUnread(key, latest?.createdAt)} onClick={() => openChat("group", group.id)} aria-label={`${ar ? "افتح" : "Open"} ${group.name}`}>
-          <GroupAvatar group={group} agents={ws.agents} size={28} />
+          <GroupRowAvatar label={group.name} portraits={members.map((member) => <BotAvatar key={member.id} agent={member} size={22} />)} />
           <span className="hub-row-copy"><span className="hub-row-title"><strong>{local.pinned.includes(key) && <Pin size={12} className="hub-pin" />}{group.name}</strong><time>{relativeTime(latest?.createdAt, lang)}</time></span><span className="hub-row-preview">{latest?.title || members.map((member) => member.name).join(" · ")}</span></span>
         </button>
         {hidden && <HubIconButton label={ar ? "إظهار" : "Unhide"} onClick={() => toggleHidden(key, false)}><EyeOff size={16} /></HubIconButton>}
@@ -354,7 +354,7 @@ export default function AgentHubPage({ demo = false }: { demo?: boolean }) {
         ) : !ws.ready ? <div className="hub-primary-skeleton"><Loader2 size={24} className="animate-spin" /></div> : null}
 
         
-        {!demo && <PeopleSection lang={lang} active={params.get("people")} onOpen={(id) => go({ people: id })} />}
+        {!demo && <PeopleSection lang={lang} agents={ws.agents} active={params.get("people")} onOpen={(id) => go({ people: id })} />}
 
         {ws.error && <div className="hub-workspace-error"><p>{ar ? "البوتات مش متاحة دلوقتي. المحادثة الأساسية لسه شغالة." : "Your bots are unavailable right now. Quick Chat still works."}</p><button type="button" onClick={() => void loadWorkspace(true)}>{ar ? "حاول تاني" : "Try again"}</button></div>}
 

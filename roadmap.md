@@ -1,4 +1,5 @@
 ## Group chats — 2026-11-11
+- [x] Match home group rows to regular chats with compact member-bot avatars; isolated mobile/desktop review and group opening passed, 6 existing tests passed. Real-account session unavailable.
 - [x] Group chat looks exactly like the normal bot chat, with every bot of the group in the header.
 - [x] Bots in a group reply on their own without an @mention, and all of them answer (an @mention narrows it; 8 bots max per message). Live reply not tested: no signed-in session available here.
 

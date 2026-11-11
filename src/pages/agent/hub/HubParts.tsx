@@ -46,6 +46,15 @@ export function BotAvatar({
   );
 }
 
+/** Compact member portraits occupy the same home-list slot as a single bot. */
+export function GroupRowAvatar({ label, portraits }: { label: string; portraits: ReactNode[] }) {
+  return <span className="hub-row-avatars" aria-label={label}>
+    {portraits.slice(0, 3).map((portrait, index) => <span className="hub-row-avatar-member" key={index}>{portrait}</span>)}
+    {portraits.length > 3 && <span className="hub-row-avatar-more">+{portraits.length - 3}</span>}
+    {!portraits.length && <Users size={24} aria-hidden />}
+  </span>;
+}
+
 export function GroupAvatar({
   group,
   agents,

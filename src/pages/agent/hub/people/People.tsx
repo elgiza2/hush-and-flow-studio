@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import type { AgentInfo } from "@/lib/agentsky/client";
 import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot } from "@/lib/people/peopleApi";
-import { BotAvatar, type HubLang } from "../HubParts";
+import { BotAvatar, GroupRowAvatar, type HubLang } from "../HubParts";
 import "@/styles/ceyo.css";
 import "@/styles/people.css";
 
@@ -47,13 +47,22 @@ export function UsernameGate({ lang, children }: { lang: HubLang; children: Reac
 }
 
 /** People chats in the home list. */
-export function PeopleSection({ lang, active, onOpen }: { lang: HubLang; active: string | null; onOpen: (id: string) => void }) {
+export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang; agents: AgentInfo[]; active: string | null; onOpen: (id: string) => void }) {
   const ar = lang === "ar";
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
+  const [groupBots, setGroupBots] = useState<Record<string, ThreadBot[]>>({});
   const [me, setMe] = useState("");
   useEffect(() => {
     let alive = true; let channel: ReturnType<typeof supabase.channel> | null = null;
-    const load = () => peopleApi.threads().then((t) => { if (alive) setThreads(t); }).catch(() => {});
+    const load = () => peopleApi.threads().then(async (t) => {
+      if (!alive) return;
+      setThreads(t);
+      const entries = await Promise.all(t.filter((thread) => thread.kind === "group").map(async (thread) => {
+        const info = await peopleApi.info(thread.id).catch(() => null);
+        return [thread.id, info?.bots || []] as const;
+      }));
+      if (alive) setGroupBots(Object.fromEntries(entries));
+    }).catch(() => {});
     void myUserId().then((id) => {
       if (!alive) return; setMe(id); void load();
       channel = supabase.channel(`people-list-${Math.random().toString(36).slice(2)}`)
@@ -73,8 +82,10 @@ export function PeopleSection({ lang, active, onOpen }: { lang: HubLang; active:
         const unread = !!t.last && t.last.senderId !== me && t.last.createdAt > t.lastReadAt;
         return <div className="hub-list-row" key={t.id}>
           <button type="button" className="hub-list-row-main" data-unread={unread} data-active={active === t.id} onClick={() => onOpen(t.id)}>
-            {t.kind === "group" ? <span className="pp-avatar pp-group-avatar">{(t.name || "G")[0].toUpperCase()}</span> : <PersonAvatar person={other} />}
-            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{t.last?.content || (t.kind === "group" ? t.members.map(personLabel).join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
+            {t.kind === "group" ? <GroupRowAvatar label={title} portraits={groupBots[t.id]?.length
+              ? groupBots[t.id].map((bot) => <BotAvatar key={bot.id} agent={agents.find((agent) => agent.id === bot.id) || botAgent(bot)} size={22} />)
+              : t.members.map((person) => <PersonAvatar key={person.id} person={person} size={22} />)} /> : <PersonAvatar person={other} />}
+            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{t.last?.content || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
           </button>
         </div>;
       })}
