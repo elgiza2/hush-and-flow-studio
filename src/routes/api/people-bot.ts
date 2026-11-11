@@ -33,7 +33,7 @@ async function handle(request: Request) {
 
   let replied = 0;
   for (const bot of bots) {
-    const { data: full } = await supabaseAdmin.from("bots").select("id,name,instructions").eq("id", bot.id).maybeSingle();
+    const { data: full } = await supabaseAdmin.from("bots").select("id,name,instructions,owner_id").eq("id", bot.id).maybeSingle();
     if (!full) continue;
     // Same loop as one-to-one chats: web tools plus the bot's own cloud computer.
     const system = `You are ${full.name}, one of several bots taking part in a group chat with real people.\n${full.instructions || ""}\nReply briefly from your own role. Other bots may already have answered in the chat above: add something new instead of repeating them. Do not prefix your reply with your name. Use your tools (web search, reading pages, run_code on your cloud computer) when the message needs fresh facts, calculations or files; claim you ran something only after a successful tool result.`;
@@ -42,7 +42,7 @@ async function handle(request: Request) {
       text = (await runAgentLoop(system, [
         { role: "user", content: `Recent chat (context only):\n${lines.join("\n")}` },
         { role: "user", content: msg.content },
-      ], () => {}, request.signal, async () => [], { usageOwner: auth.userId, maxSteps: 5 })).trim();
+      ], () => {}, request.signal, async () => [], { usageOwner: auth.userId, botId: full.owner_id === auth.userId ? full.id : null, maxSteps: 8 })).trim();
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       if (isUsageExhausted(message) || message.startsWith("Could not check usage")) return Response.json({ error: message }, { status: 402, headers: noStore });

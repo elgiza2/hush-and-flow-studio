@@ -14,6 +14,8 @@ type Sandbox = { id: string; token?: string; domain: string; key: string };
 
 export type Computer = {
   run: (code: string, language?: ComputerLanguage, timeoutMs?: number) => Promise<{ ok: boolean; output: string }>;
+  readFile: (path: string) => Promise<Uint8Array>;
+  prepareMedia: () => Promise<{ ok: boolean; output: string }>;
   close: () => Promise<void>;
 };
 
@@ -32,7 +34,7 @@ async function openSandbox(key: string): Promise<Sandbox> {
 /** Creates a lazy computer session; nothing starts until the first run. */
 export function createComputer(): Computer {
   let box: Promise<Sandbox> | null = null;
-  return {
+  const computer: Computer = {
     async run(code, language = "python", timeoutMs = 60_000) {
       const key = await getProviderKey("e2b");
       if (!key) return { ok: false, output: "The cloud computer is unavailable: no E2B key is configured." };
@@ -62,6 +64,24 @@ export function createComputer(): Computer {
         clearTimeout(timer);
       }
     },
+    async prepareMedia() {
+      return computer.run("%pip -q install imageio-ffmpeg\nimport imageio_ffmpeg,os\nff=imageio_ffmpeg.get_ffmpeg_exe()\nos.makedirs('/home/user/.local/bin',exist_ok=True)\nlink='/home/user/.local/bin/ffmpeg'\nif not os.path.exists(link): os.symlink(ff,link)\nprint('ffmpeg ready:',ff)", "python", 120000);
+    },
+    async readFile(path) {
+      if (!path.startsWith("/home/user/") || path.split("/").includes("..")) throw new Error("Export files only from /home/user/");
+      const pending = box;
+      if (!pending) throw new Error("Run code to create the file first");
+      const sb = await pending;
+      const res = await fetch(`https://49983-${sb.id}.${sb.domain}/files?path=${encodeURIComponent(path)}`, { headers: { ...(sb.token ? { "X-Access-Token": sb.token } : {}) }, signal: AbortSignal.timeout(60000) });
+      if (!res.ok || !res.body) throw new Error("Produced file unavailable");
+      const reader = res.body.getReader();
+      const chunks: Uint8Array[] = []; let size = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; size += value.byteLength; if (size > 20971520) { await reader.cancel(); throw new Error("File exceeds 20 MB; compress or split it"); } chunks.push(value); }
+      if (!size) throw new Error("Produced file is empty");
+      const bytes = new Uint8Array(size); let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+      return bytes;
+    },
     async close() {
       const pending = box;
       box = null;
@@ -70,6 +90,7 @@ export function createComputer(): Computer {
       if (sb) await fetch(`${API}/sandboxes/${sb.id}`, { method: "DELETE", headers: { "X-API-Key": sb.key } }).catch(() => {});
     },
   };
+  return computer;
 }
 
 /** One-shot run in a fresh sandbox that is killed right after. */

@@ -1,0 +1,2 @@
+CREATE POLICY agent_artifacts_storage_read ON storage.objects FOR SELECT TO authenticated USING(bucket_id='agent-artifacts' AND (storage.foldername(name))[1]=auth.uid()::text);
+CREATE POLICY agent_artifacts_storage_delete ON storage.objects FOR DELETE TO authenticated USING(bucket_id='agent-artifacts' AND (storage.foldername(name))[1]=auth.uid()::text);

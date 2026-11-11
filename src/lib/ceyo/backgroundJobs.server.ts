@@ -5,6 +5,8 @@
  *  (queued → running) so it never runs twice, and its result is delivered once
  *  with the job id as the message id. */
 import { runAgentLoop } from "./agentLoop.server";
+import type { LoopEvent } from "./agentLoop.server";
+import { needsBrowserLogin } from "./taskOutcome";
 
 export function backgroundReady(): boolean {
   return Boolean(process.env.LOVABLE_CRON_SECRET);
@@ -28,18 +30,21 @@ export async function runJob(jobId: string): Promise<string> {
     return (data || []).map((m) => m.content);
   };
   try {
+    const transcript: LoopEvent[] = [];
     const text = await runAgentLoop(
-      job.system_prompt + "\nComplete this background research or writing job and return the finished deliverable. No workspace or integration actions are available in this background job; do not claim them.",
-      [{ role: "user", content: job.goal }], () => {}, new AbortController().signal, poll, { usageOwner: job.user_id, maxSteps: 25 },
+      job.system_prompt + "\nComplete this background task and export produced files. Only perform account actions explicitly authorized in the user's goal. If login is required, hand off and stop. No workspace or integration API actions are available; do not claim them.",
+      [{ role: "user", content: job.goal }], (event) => { if (event.type !== "agent.reasoning") transcript.push(event); }, AbortSignal.timeout(8 * 60000), poll, { usageOwner: job.user_id, botId: job.bot_id, maxSteps: 25 },
     );
     if (!text.trim()) throw new Error("No completed answer");
     const { error } = await db.from("messages").upsert(
-      { id: job.id, user_id: job.user_id, conversation_id: job.conversation_id, bot_id: job.bot_id, role: "assistant", content: text, metadata: { fromJob: job.id } },
+      { id: job.id, user_id: job.user_id, conversation_id: job.conversation_id, bot_id: job.bot_id, role: "assistant", content: text, metadata: { fromJob: job.id, transcript: transcript as never } },
       { onConflict: "id", ignoreDuplicates: true },
     );
     if (error) throw new Error(error.message);
-    await db.from("agent_jobs").update({ status: "completed", result: text }).eq("id", job.id);
+    const waiting = needsBrowserLogin(transcript);
+    await db.from("agent_jobs").update({ status: waiting ? "failed" : "completed", result: text, error: waiting ? "Sign-in required; send the task again after login" : null }).eq("id", job.id);
     await db.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", job.conversation_id);
+    if (waiting) return "login_required";
     // Ring the user the moment the task is done; the bot opens the call with the result.
     const { error: callError } = await db.from("agent_calls").upsert({ id: job.id, user_id: job.user_id, bot_id: job.bot_id, conversation_id: job.conversation_id, kind: "voice", status: "ringing", reason: `You finished the task the user gave you: "${job.goal.slice(0, 200)}". Tell them it's done and summarize the result briefly: ${text.slice(0, 900)}` }, { onConflict: "id", ignoreDuplicates: true });
     if (callError) console.error("Task finished, but its completion call could not be saved");

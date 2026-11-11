@@ -1,0 +1,22 @@
+name: Ceyo recurring tasks
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: ceyo-recurring-tasks
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Run authorized recurring tasks
+        env:
+          APP_URL: ${{ vars.CEYO_APP_URL }}
+          SCHEDULER_SECRET: ${{ secrets.CEYO_CRON_SECRET }}
+        run: |
+          test -n "$APP_URL" && test -n "$SCHEDULER_SECRET"
+          curl --fail --silent --show-error --max-time 1700 --request POST \
+            --header "Authorization: Bearer $SCHEDULER_SECRET" \
+            "$APP_URL/api/public/ceyo-routines"

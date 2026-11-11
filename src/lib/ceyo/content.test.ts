@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { routineInput, nextRoutineRun, validateVaultDetail, readTextAttachment } from "./content";
+import { routineInput, nextRoutineRun, nextMinuteRoutineRun, validateVaultDetail, readTextAttachment } from "./content";
 describe("resource rules", () => {
   it("reads actual text file bytes, not just a filename", async () => {
     expect((await readTextAttachment(new File(["amount,125.5"], "invoice.csv"))).content).toBe("amount,125.5");
@@ -11,4 +11,7 @@ describe("resource rules", () => {
   it("schedules daily routines exactly 24 hours later", () => { expect(nextRoutineRun(24, new Date("2026-11-07T03:00:00Z"))).toBe("2026-11-08T03:00:00.000Z"); });
   it("schedules weekly routines exactly 168 hours later", () => { expect(nextRoutineRun(168, new Date("2026-11-07T03:00:00Z"))).toBe("2026-11-14T03:00:00.000Z"); });
   it("rejects unsupported schedules", () => { expect(routineInput.safeParse({ title: "Test", goal: "Research", interval_hours: 1 }).success).toBe(false); });
+  it("runs a five-minute routine exactly five minutes later", () => { expect(nextMinuteRoutineRun(5, new Date("2026-11-11T17:00:00Z"))).toBe("2026-11-11T17:05:00.000Z"); });
+  it("accepts a five-minute routine without an hours field", () => { expect(routineInput.parse({ title: "Messages", goal: "Check messages", interval_minutes: 5 }).interval_minutes).toBe(5); });
+  it("rejects intervals shorter than five minutes", () => { expect(() => nextMinuteRoutineRun(4)).toThrow(); });
 });

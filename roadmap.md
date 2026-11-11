@@ -1,9 +1,11 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
-- [ ] Complete requested autonomous-computer work: durable bot browser contexts with login handoff, 5-minute routines, media preparation and private downloadable artifacts; verify and document external blockers. التواصل مع المستخدم بالعربية.
+- [x] Implement durable bot browser contexts with human login handoff, minute routines, media preparation and private downloadable artifacts; live provider verification and external blockers documented in docs/AUTONOMOUS-COMPUTER.md.
 - [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
-- [ ] Next: persistent logged-in browser sessions per bot (Browserbase contexts) so bots stay signed in to sites.
-- [ ] Next: short-interval routines (e.g. every 5 minutes) — current routines are daily/weekly only.
-- [ ] Next: media tools on the computer (ffmpeg is not in the default image) and returning produced files/images into chat.
+- [x] Persistent Browserbase contexts per authorized bot, isolated computer controls, temporary login handoff. Actual website logins require the account owner and remain unverified.
+- [x] Five-minute routine schema/tools/lease/run handling and protected external callback; committed GitHub Actions schedule.
+- [ ] Activate and verify automatic schedule: needs deployed updated app, source-repository scheduler variable/secret, enabled workflow and successful callback readback. Current server marker is not configured; no claim of all-day autonomous execution.
+- [x] ffmpeg preparation and private artifact export/download; live E2B file read and video encoding succeeded.
+- [ ] Real-account chat/artifact/login/resume checks: external unmanaged authentication cannot be restored here; human site authorization required.
 - [ ] Rotate the E2B key later: it was shared in chat.
 
 ## Group chats — 2026-11-11

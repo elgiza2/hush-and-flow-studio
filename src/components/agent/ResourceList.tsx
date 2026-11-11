@@ -3,6 +3,7 @@ import { Download, Trash2, Play, Pause } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { loadArtifact } from "@/lib/computer/artifactClient";
 
 export function ResourceList({ kind, query = "", botId }: { kind: "files" | "routines"; query?: string; botId?: string }) {
   const [rows, setRows] = useState<any[]>([]);
@@ -18,15 +19,29 @@ export function ResourceList({ kind, query = "", botId }: { kind: "files" | "rou
       request = request.in("conversation_id", (data || []).map((c: any) => c.id));
     }
     const { data, error: readError } = await request;
-    setRows(data || []); setError(readError?.message || ""); setLoading(false);
+    if (kind === "files") {
+      const artifacts = await supabase.from("agent_artifacts").select("id,name,mime,created_at").order("created_at", { ascending: false }).limit(100);
+      setRows([...(data || []), ...(artifacts.data || []).map((row) => ({ ...row, artifact: true }))]);
+      setError(readError?.message || artifacts.error?.message || "");
+    } else { setRows(data || []); setError(readError?.message || ""); }
+    setLoading(false);
   };
   useEffect(() => { void refresh(); }, [kind, botId]);
   const remove = async (id: string) => {
-    const { error } = await (supabase as any).from(table).delete().eq("id", id);
+    const row = rows.find((item) => item.id === id);
+    if (row?.artifact) {
+      const found = await supabase.from("agent_artifacts").select("storage_path").eq("id", id).single();
+      if (found.error) { toast.error(found.error.message); return; }
+      const removed = await supabase.storage.from("agent-artifacts").remove([found.data.storage_path]);
+      if (removed.error) { toast.error(removed.error.message); return; }
+    }
+    const { error } = await (supabase as any).from(row?.artifact ? "agent_artifacts" : table).delete().eq("id", id);
     if (error) toast.error(error.message); else await refresh();
   };
-  const download = (row: any) => {
-    const url = URL.createObjectURL(new Blob([row.content], { type: row.mime || "text/plain" }));
+  const download = async (row: any) => {
+    let blob = new Blob([row.content || ""], { type: row.mime || "text/plain" });
+    if (row.artifact) { try { const artifact = await loadArtifact(row.id); if (!artifact) throw new Error("File unavailable"); blob = artifact.blob; } catch { toast.error("Could not download this file"); return; } }
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a"); link.href = url; link.download = row.name; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
