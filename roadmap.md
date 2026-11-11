@@ -1,13 +1,14 @@
 ## Cloud computer (Grok-Bot style) — 2026-11-11
-- [ ] Continue with supplied test account: verify actual chat file export/download and browser handoff; investigate scheduler activation without claiming unconfigured automation.
-- [ ] Activate five-minute scheduling and connect requested website accounts: external scheduler authorization/deployed endpoint required; site login/2FA remains account-owner controlled.
+- [x] Supplied test account: actual UI sign-in, run_code/export_file and chat CSV download verified with concrete contents. GitHub scheduler access investigated: repository pull only, no push/admin, Secrets/Actions configuration denied with 403.
+- [ ] Activate five-minute scheduling: connected GitHub account needs repository write plus Actions/Secrets management, followed by updated deployment and verified scheduled callback.
+- [ ] Connect website accounts: needs the account owner to authorize the intended Telegram/Shopify/Instagram/WhatsApp accounts; test-app password does not authorize or log in to those services.
 - [x] Implement durable bot browser contexts with human login handoff, minute routines, media preparation and private downloadable artifacts; live provider verification and external blockers documented in docs/AUTONOMOUS-COMPUTER.md.
 - [x] E2B cloud computer: `run_code` (Python/JavaScript/bash) for every bot in chats, specialists, background jobs and groups; one sandbox per run, files persist between steps. Live run through the agent loop passed; key saved in the provider pool and added to the Telegram key menu.
 - [x] Persistent Browserbase contexts per authorized bot, isolated computer controls, temporary login handoff. Actual website logins require the account owner and remain unverified.
 - [x] Five-minute routine schema/tools/lease/run handling and protected external callback; committed GitHub Actions schedule.
 - [ ] Activate and verify automatic schedule: needs deployed updated app, source-repository scheduler variable/secret, enabled workflow and successful callback readback. Current server marker is not configured; no claim of all-day autonomous execution.
 - [x] ffmpeg preparation and private artifact export/download; live E2B file read and video encoding succeeded.
-- [ ] Real-account chat/artifact/login/resume checks: external unmanaged authentication cannot be restored here; human site authorization required.
+- [ ] Remaining account checks: file readback after reload, browser human login/resume and real external website sessions unverified; initial signed-in CSV creation/download passed.
 - [ ] Rotate the E2B key later: it was shared in chat.
 
 ## Group chats — 2026-11-11
