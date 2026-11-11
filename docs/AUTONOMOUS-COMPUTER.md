@@ -16,6 +16,8 @@ An operator must configure the source repository variable `CEYO_APP_URL` to a de
 
 Activation attempt on 2026-11-11: conversation-only GitHub connection has `pull:true`, `push:false`, `admin:false` on the original repository. Actions settings and the Secrets public-key endpoints return 403; workflows list is empty. Access must be granted before writing the workflow/settings or storing its encrypted secret. No scheduler or website accounts were activated.
 
+Reconnect was completed and re-tested: Secrets still returns 403. `/user` identifies the connected account as `elgizaiiio`, not original repository owner `elgiza2`. Do not loop reconnect or change app permissions to work around this. Obtain owner access or explicit approval for a separate private scheduler repository under the connected account.
+
 ## Limitations
 Recurring work consumes existing usage allowance and provider resources; free allowance can stop it well before a full day. No unlimited autonomous operation is promised. Websites can expire logins or require human verification; bots never bypass CAPTCHA/2FA or site rules. Instagram/WhatsApp/Shopify operations still require authorized accounts and successful website/API responses. Browser and media libraries install lazily and may fail due to provider/package availability; failures must remain visible. Large videos require compression or a larger separately reviewed delivery design.
 
