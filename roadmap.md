@@ -1,3 +1,8 @@
+## Landing page — 2026-11-12
+- [x] ceyo.si and ceyo.app show the landing page (web only); web.ceyo.si stays the web app, app.ceyo.si the Android app. 14 address tests pass; live domains unverified until publish.
+- [x] Main landing page in the megsy-global-voice design with Ceyo bots throughout, Arabic/English; desktop/phone and language switch checked via ?landing=1 preview.
+- [ ] Android store link for the landing page: needs the Google Play address from the owner.
+
 ## Cloud computer (Grok-Bot style) — 2026-11-11
 - [x] Lovable publishing requested and site readback returned HTTP 200; authenticated live scheduler callback returned valid JSON 200. Encrypted GitHub secret/app URL saved; enabled five-minute schedule and first dispatched run completed successfully.
 - [x] Supplied test account: actual UI sign-in, run_code/export_file and chat CSV download verified with concrete contents. GitHub scheduler access investigated: repository pull only, no push/admin, Secrets/Actions configuration denied with 403.

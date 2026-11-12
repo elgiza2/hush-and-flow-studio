@@ -1,10 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SpaMount } from "@/lib/spaMount";
+import { Suspense, lazy } from "react";
+import { showsLanding } from "@/config/domains";
 
-// The home page is the Ceyo SPA itself (same mount as the catch-all `$` route).
+// Landing domains (ceyo.si, ceyo.app) show the landing page; every other host
+// is the Ceyo app. Both are lazy so the landing never downloads the app boot.
+const isLanding = typeof window !== "undefined" && showsLanding(window.location.host, window.location.search);
+// Start the app download as soon as this route loads, exactly like a static import.
+const spaModule = typeof window !== "undefined" && !isLanding ? import("@/lib/spaMount") : null;
+const SpaMount = lazy(() => (spaModule ?? import("@/lib/spaMount")).then((m) => ({ default: m.SpaMount })));
+const CeyoLanding = lazy(() => import("@/components/landing/CeyoLanding"));
+
+function Home() {
+  const landing = isLanding;
+  return <Suspense fallback={null}>{landing ? <CeyoLanding /> : <SpaMount />}</Suspense>;
+}
+
 export const Route = createFileRoute("/")({
   ssr: false,
-  component: SpaMount,
+  component: Home,
   head: () => ({
     meta: [
       { title: "Ceyo — Your Personal Bots and Group Chats" },
