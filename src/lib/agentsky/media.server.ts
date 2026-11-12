@@ -55,12 +55,9 @@ export function pickModel(kind: MediaKind, tier: Tier, requested?: string | null
 
 export async function userTier(userId: string): Promise<Tier> {
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/has_paid_plan`, {
-      method: "POST",
-      headers: { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ p_user_id: userId }),
-    });
-    return (await r.json()) === true ? "pro" : "free";
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("subscriptions").select("plan,current_period_end").eq("user_id", userId).maybeSingle();
+    return data && ["plus", "pro", "ultra"].includes(data.plan) && new Date(data.current_period_end).getTime() > Date.now() ? "pro" : "free";
   } catch {
     return "free";
   }

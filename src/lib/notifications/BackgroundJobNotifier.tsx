@@ -44,14 +44,14 @@ export default function BackgroundJobNotifier() {
       if (!row?.id) return;
       const key = `job:${row.id}:${row.status}`;
       if (seen.current.has(key)) return;
-      if (row.status !== "done" && row.status !== "error") return;
+      if (row.status !== "completed" && row.status !== "failed") return;
       seen.current.add(key);
       const meta = KIND_LABEL[row.kind as string] ?? { label: "Task finished", kind: "research" as Kind };
-      const title = row.status === "error" ? "A background task failed" : meta.label;
+      const title = row.status === "failed" ? "A background task failed" : meta.label;
       const body =
         row.status === "error"
           ? String(row.error || "Something went wrong. Your progress was saved.").slice(0, 180)
-          : row.status_text || undefined;
+          : String(row.result || "").slice(0, 180) || undefined;
       notifyJobComplete({
         kind: meta.kind,
         title,
@@ -71,7 +71,7 @@ export default function BackgroundJobNotifier() {
       notifyJobComplete({
         kind: "research",
         title: failed ? "The agent stopped with an error" : "The agent finished your task",
-        body: (row.summary || row.goal || undefined)?.slice?.(0, 180),
+        body: (row.result || undefined)?.slice?.(0, 180),
         onClickUrl: row.conversation_id ? `/chat/${row.conversation_id}` : undefined,
       });
     };
@@ -83,15 +83,15 @@ export default function BackgroundJobNotifier() {
       const since = new Date(Date.now() - 10 * 60_000).toISOString();
       const [jobs, runs] = await Promise.all([
         supabase
-          .from("background_jobs" as any)
-          .select("id,kind,status,status_text,error,conversation_id,updated_at")
+          .from("agent_jobs" as any)
+          .select("id,status,result,error,conversation_id,updated_at")
           .eq("user_id", userId)
-          .in("status", ["done", "error"])
+          .in("status", ["completed", "failed"])
           .gte("updated_at", since)
           .limit(20),
         supabase
-          .from("long_runs" as any)
-          .select("id,status,goal,conversation_id,updated_at")
+          .from("agent_routine_runs" as any)
+          .select("id,status,result,updated_at")
           .eq("user_id", userId)
           .gte("updated_at", since)
           .limit(20),
@@ -109,10 +109,10 @@ export default function BackgroundJobNotifier() {
       // Seed `seen` with what already finished so we don't replay old work.
       const since = new Date(Date.now() - 10 * 60_000).toISOString();
       const { data: old } = await supabase
-        .from("background_jobs" as any)
+        .from("agent_jobs" as any)
         .select("id,status")
         .eq("user_id", userId)
-        .in("status", ["done", "error"])
+        .in("status", ["completed", "failed"])
         .gte("updated_at", since)
         .limit(50);
       (old as any[] | null)?.forEach((r) => seen.current.add(`job:${r.id}:${r.status}`));
@@ -124,7 +124,7 @@ export default function BackgroundJobNotifier() {
         .channel(`bg-jobs-notify-${userId}-${instanceId}`)
         .on(
           "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "background_jobs", filter: `user_id=eq.${userId}` },
+          { event: "UPDATE", schema: "public", table: "agent_jobs", filter: `user_id=eq.${userId}` },
           (payload) => announceJob(payload.new),
         )
         .subscribe();
@@ -133,7 +133,7 @@ export default function BackgroundJobNotifier() {
         .channel(`long-runs-notify-${userId}-${instanceId}`)
         .on(
           "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "long_runs", filter: `user_id=eq.${userId}` },
+          { event: "UPDATE", schema: "public", table: "agent_routine_runs", filter: `user_id=eq.${userId}` },
           (payload) => announceRun(payload.new),
         )
         .subscribe();

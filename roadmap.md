@@ -1,3 +1,7 @@
+## Paywall + landing story — 2026-11-12
+- [x] Free accounts get no usage; subscription required.
+- [x] Landing page (incl. 1,000+ app integrations): explain full projects, wallet, phone/video calls, per-bot computers and parallel specialist work.
+
 ## Deep diagnostic audit — 2026-11-12 08:09 UTC
 - [x] Inspect real database schema, policies, function grants, storage isolation, job states and ownership consistency without reading credentials or changing account data.
 - [x] Run all 73 test files (251 tests); exercise public mobile/desktop pages, invalid email, unsigned APIs, landing FAQ/legal navigation and live-domain reachability.

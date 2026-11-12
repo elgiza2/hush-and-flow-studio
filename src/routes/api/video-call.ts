@@ -17,6 +17,7 @@ async function handle(request: Request) {
   const { getUsageStatus, usageFailure } = await import("@/lib/ceyo/usage.server");
   let isPaid: boolean;
   try { isPaid = (await getUsageStatus(auth.db)).isPaid; } catch (error) { return usageFailure(error); }
+  if (!isPaid) return Response.json({ error: "Subscribe to start video calls.", code: "subscription_required" }, { status: 402, headers: noStore });
   const parsed = input.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Invalid call" }, { status: 400, headers: noStore });
   const { agentName, agentPrompt, language, reason } = parsed.data;
