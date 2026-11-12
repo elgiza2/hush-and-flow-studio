@@ -285,6 +285,14 @@ bunx vitest run
 انظر `roadmap.md` لحالة الطلب الحالي؛ الأقسام التاريخية فيه ليست قائمة حقائق حديثة وقد تتعارض بسبب نقل المساحات والخدمات.
 
 ## Current work
+### Deep diagnostic audit — 2026-11-12 08:09 UTC
+- Current evidence and priorities: `docs/deep-audit-2026-11-12.md`; no application code, account data, provider keys or hosted settings changed.
+- Verification: 73 files / 251 tests pass; 434×763 mobile and 1280×1800 desktop public checks, invalid-email rejection, six unsigned API 401 checks, two media endpoint 500 reproductions, FAQ expansion and landing → About navigation checked.
+- Database: all 31 public tables have RLS; privileged charging/settlement/key RPCs deny anon/authenticated execution; artifact bucket is private with owner read/delete policies. Four current ownership consistency checks return zero mismatches. One completed job/run and one inactive routine are not evidence of continuous operation.
+- Important additional defects: account deletion only signs out; wallet read failures become zero balances; first-wallet creation is not serialized; media entitlement references an absent RPC; running jobs have no recovery; routine completion writes are unchecked; legacy completion notifications query nonexistent tables.
+- Live domain reachability: web.ceyo.si and app.ceyo.si load sign-in; ceyo.si landing and FAQ checked; ceyo.app fails sandbox DNS resolution (scope-limited observation, not a worldwide outage diagnosis).
+- Limits: no fresh authenticated account flow, real transfer, purchase, real-device call, provider-media generation, inbox delivery or long-running scheduler check. Owner reports Google URL configuration complete; hosted readback/full OAuth not checked. Build log unavailable; tests are not a production build check.
+
 ### Landing visibility and inline visual answers — 2026-11-12
 - Removed a dangling listener for the deleted language button that aborted the landing animation script and left nine sections hidden. English-only page and domain split remain unchanged.
 - Current bot and people/group chats share formatted Markdown tables and completed `widget` drawings (HTML/SVG/canvas); explicit visual follow-ups use the normal chat send path. Agent prompts request organized visual answers when useful.

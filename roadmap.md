@@ -1,3 +1,11 @@
+## Deep diagnostic audit — 2026-11-12 08:09 UTC
+- [x] Inspect real database schema, policies, function grants, storage isolation, job states and ownership consistency without reading credentials or changing account data.
+- [x] Run all 73 test files (251 tests); exercise public mobile/desktop pages, invalid email, unsigned APIs, landing FAQ/legal navigation and live-domain reachability.
+- [x] Record confirmed defects, source-level risks and exact coverage limits in docs/deep-audit-2026-11-12.md. This request is diagnostic only; application behavior is unchanged.
+- [ ] Fresh authenticated chat/group/settings/files/calls/checkout testing: no managed session is available for the external Supabase project; previous credentials and earlier claims are not fresh verification.
+- [ ] Remediate prioritized audit findings in a separate implementation request; do not treat the passing unit suite as production approval.
+- Google URL configuration: owner reports it completed; removed from the current requested setup list, but a complete OAuth round trip remains unverified.
+
 ## Landing page — 2026-11-12
 - [x] ceyo.si and ceyo.app show the landing page (web only); web.ceyo.si stays the web app, app.ceyo.si the Android app. 14 address tests pass; live domains unverified until publish.
 - [x] Main landing page in the megsy-global-voice design with Ceyo bots throughout, Arabic/English; desktop/phone and language switch checked via ?landing=1 preview.
