@@ -9,7 +9,11 @@ const bearerMiddleware = createMiddleware().client(async ({ next }) => {
   return next({ headers: token ? { Authorization: `Bearer ${token}` } : {} });
 });
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
+  // Platform email routes authenticate themselves and must pass through untouched.
+  if (new URL(request.url).pathname.startsWith("/lovable/")) {
+    return next();
+  }
   try {
     return await next();
   } catch (error) {
