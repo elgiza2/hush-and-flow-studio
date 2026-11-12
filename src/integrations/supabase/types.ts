@@ -1364,6 +1364,25 @@ export type Database = {
         Args: { p_bot_ids: string[]; p_name: string; p_usernames: string[] }
         Returns: string
       }
+      finish_agent_job: {
+        Args: {
+          p_id: string
+          p_metadata: Json
+          p_text: string
+          p_waiting: boolean
+        }
+        Returns: boolean
+      }
+      finish_routine_run: {
+        Args: {
+          p_metadata: Json
+          p_next: string
+          p_run: string
+          p_text: string
+          p_waiting: boolean
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
