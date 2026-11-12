@@ -1250,6 +1250,39 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_operations: {
+        Row: {
+          created_at: string
+          id: string
+          operation_key: string
+          request_hash: string
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          operation_key: string
+          request_hash: string
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          operation_key?: string
+          request_hash?: string
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1371,6 +1404,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_wallet_once: {
+        Args: { p_user: string; p_wallet: Json }
+        Returns: Json
+      }
       search_people: {
         Args: { p_query: string }
         Returns: {
@@ -1389,6 +1426,7 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      wallet_encryption_key: { Args: { p_candidate: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"

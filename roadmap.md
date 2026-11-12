@@ -5,6 +5,7 @@
 - [ ] Repair unsigned media handling, job state persistence/recovery and stale reminder queries.
 - [ ] Finish English interface, safe user errors and landing-inspired email templates.
 - [ ] Run regression/public flow checks and record blockers without claiming live deployment.
+- [ ] Remove public Android availability claims; web is available and Android is in closed testing.
 - Social bio: owner is updating @ceyosi with https://ceyo.si; no social account edit requested.
 
 ## Paywall + landing story — 2026-11-12
