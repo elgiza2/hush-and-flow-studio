@@ -65,7 +65,7 @@ async function handle(request: Request) {
     return Response.json({ error: "Could not check the daily video-call allowance. Please try again." }, { status: 503, headers: noStore });
   }
   if (!quota.allowed) {
-    return Response.json({ error: lang === "ar" ? "خلصت دقيقة الفيديو المجانية لليوم. تقدر تستخدمها تاني بعد منتصف الليل بتوقيت القاهرة." : "Your free daily video minute has been used. It resets at midnight Cairo time.", code: "daily_video_limit" }, { status: 429, headers: noStore });
+    return Response.json({ error: "Your free daily video minute has been used. It resets at midnight Cairo time.", code: "daily_video_limit" }, { status: 429, headers: noStore });
   }
   // If a paid plan expired while Anam was issuing the first token, replace it with a limited token.
   if (isPaid && !quota.isPaid) {

@@ -32,7 +32,7 @@ async function handle(request: Request) {
       fetch("https://api.deepgram.com/v1/auth/grant", { method: "POST", signal: request.signal, headers: { Authorization: `Token ${dgKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ ttl_seconds: 300 }) }),
       fetch("https://api.cartesia.ai/access-token", { method: "POST", signal: request.signal, headers: { Authorization: `Bearer ${ctKey}`, "Cartesia-Version": "2026-08-14", "Content-Type": "application/json" }, body: JSON.stringify({ grants: { tts: true }, expires_in: 3600 }) }),
     ]);
-    if (grant.status === 403) return Response.json({ error: "مفتاح Deepgram محتاج صلاحية Member أو أعلى عشان المكالمة تشتغل." }, { status: 502, headers: noStore });
+    if (grant.status === 403) return Response.json({ error: "Voice calls are unavailable right now. Please try again later." }, { status: 502, headers: noStore });
     if (!grant.ok || !ct.ok) return Response.json({ error: "Voice service refused the call." }, { status: 502, headers: noStore });
     const { access_token } = await grant.json() as { access_token?: string };
     const { token: ctToken } = await ct.json() as { token?: string };

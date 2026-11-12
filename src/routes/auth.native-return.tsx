@@ -29,7 +29,7 @@ function NativeReturn() {
   }, []);
   return <main className="min-h-dvh flex flex-col items-center justify-center gap-6 bg-background text-foreground px-6">
     <h1 className="text-3xl font-semibold">Ceyo</h1>
-    {target ? <Button onClick={() => { window.location.assign(target); }}>العودة إلى التطبيق</Button>
-      : <p role="alert">تعذّر إكمال تسجيل الدخول. جرّب مرة أخرى من التطبيق.</p>}
+    {target ? <Button onClick={() => { window.location.assign(target); }}>Return to the app</Button>
+      : <p role="alert">We couldn't finish signing you in. Please try again from the app.</p>}
   </main>;
 }

@@ -18,6 +18,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SubscriptionTermsRouteImport } from './routes/subscription-terms'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ZzHarnessRouteImport } from './routes/zz-harness'
 import { Route as ApiAnythingRouteImport } from './routes/api/anything'
 import { Route as ApiBillingRouteImport } from './routes/api/billing'
 import { Route as ApiCallFollowupRouteImport } from './routes/api/call-followup'
@@ -107,6 +108,11 @@ const SubscriptionTermsRoute = SubscriptionTermsRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ZzHarnessRoute = ZzHarnessRouteImport.update({
+  id: '/zz-harness',
+  path: '/zz-harness',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAnythingRoute = ApiAnythingRouteImport.update({
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/subscription-terms': typeof SubscriptionTermsRoute
   '/terms': typeof TermsRoute
+  '/zz-harness': typeof ZzHarnessRoute
   '/api/anything': typeof ApiAnythingRoute
   '/api/billing': typeof ApiBillingRoute
   '/api/call-followup': typeof ApiCallFollowupRoute
@@ -406,6 +413,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/subscription-terms': typeof SubscriptionTermsRoute
   '/terms': typeof TermsRoute
+  '/zz-harness': typeof ZzHarnessRoute
   '/api/anything': typeof ApiAnythingRoute
   '/api/billing': typeof ApiBillingRoute
   '/api/call-followup': typeof ApiCallFollowupRoute
@@ -463,6 +471,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/subscription-terms': typeof SubscriptionTermsRoute
   '/terms': typeof TermsRoute
+  '/zz-harness': typeof ZzHarnessRoute
   '/api/anything': typeof ApiAnythingRoute
   '/api/billing': typeof ApiBillingRoute
   '/api/call-followup': typeof ApiCallFollowupRoute
@@ -521,6 +530,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/subscription-terms'
     | '/terms'
+    | '/zz-harness'
     | '/api/anything'
     | '/api/billing'
     | '/api/call-followup'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/subscription-terms'
     | '/terms'
+    | '/zz-harness'
     | '/api/anything'
     | '/api/billing'
     | '/api/call-followup'
@@ -633,6 +644,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/subscription-terms'
     | '/terms'
+    | '/zz-harness'
     | '/api/anything'
     | '/api/billing'
     | '/api/call-followup'
@@ -690,6 +702,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SubscriptionTermsRoute: typeof SubscriptionTermsRoute
   TermsRoute: typeof TermsRoute
+  ZzHarnessRoute: typeof ZzHarnessRoute
   ApiAnythingRoute: typeof ApiAnythingRoute
   ApiBillingRoute: typeof ApiBillingRoute
   ApiCallFollowupRoute: typeof ApiCallFollowupRoute
@@ -800,6 +813,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/zz-harness': {
+      id: '/zz-harness'
+      path: '/zz-harness'
+      fullPath: '/zz-harness'
+      preLoaderRoute: typeof ZzHarnessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/anything': {
@@ -1130,6 +1150,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SubscriptionTermsRoute: SubscriptionTermsRoute,
   TermsRoute: TermsRoute,
+  ZzHarnessRoute: ZzHarnessRoute,
   ApiAnythingRoute: ApiAnythingRoute,
   ApiBillingRoute: ApiBillingRoute,
   ApiCallFollowupRoute: ApiCallFollowupRoute,

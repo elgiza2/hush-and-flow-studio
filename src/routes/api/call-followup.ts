@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/call-followup")({ server: { handlers:
       await db.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", userId);
       return Response.json({ conversationId });
     } catch {
-      await db.from("messages").update({ content: input.language.startsWith("ar") ? "انتهت المكالمة، لكن تعذّر إرسال ملخصها. ابعتلي الخطوة اللي تحب نكملها." : "The call ended, but I couldn't prepare its follow-up. Tell me what you'd like to continue with.", metadata: { callFollowup: true, incomplete: true } }).eq("id", input.callId).eq("user_id", userId);
+      await db.from("messages").update({ content: "The call ended, but I couldn't prepare its follow-up. Tell me what you'd like to continue with.", metadata: { callFollowup: true, incomplete: true } }).eq("id", input.callId).eq("user_id", userId);
       return new Response("Call follow-up unavailable", { status: 503 });
     }
   },

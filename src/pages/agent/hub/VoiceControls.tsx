@@ -38,11 +38,11 @@ export function VoiceSettingsFields({ value, onChange }: { value: AgentVoiceSett
   const [retry, setRetry] = useState(0);
   useEffect(() => { let active = true; setError(""); getVoices().then((v) => { if (active) { setVoices(v); setError(""); } }).catch((e) => { if (active) setError(e.message); }); return () => { active = false; }; }, [retry]);
   const languages = [...new Set(["ar", "en", ...voices.map((v) => v.language)])].sort();
-  const ar = typeof navigator !== "undefined" && (localStorage.getItem("ceyo_language") || navigator.language).startsWith("ar");
+  const ar = false; // English-only interface
   const language = resolveLanguage(value.language, typeof navigator !== "undefined" ? localStorage.getItem("ceyo_language") || navigator.language : "en");
   const visibleVoices = voicesForLanguage(voices, language);
   return <div className="cx-voice-settings">
-    <label>{ar ? "اللغة" : "Language"}<ChoiceList label="Voice language" value={value.language} onChange={language => onChange({ ...value, language, voice: "Not set" })} options={[{ value: "Auto", label: ar ? "تلقائي" : "Automatic" }, ...languages.map(l => ({ value: l, label: l === "ar" ? "العربية" : new Intl.DisplayNames([ar ? "ar" : "en"], { type: "language" }).of(l) || l }))]} /></label>
+    <label>{ar ? "اللغة" : "Language"}<ChoiceList label="Voice language" value={value.language} onChange={language => onChange({ ...value, language, voice: "Not set" })} options={[{ value: "Auto", label: ar ? "تلقائي" : "Automatic" }, ...languages.map(l => ({ value: l, label: new Intl.DisplayNames([ar ? "ar" : "en"], { type: "language" }).of(l) || l }))]} /></label>
     <label>{ar ? "الصوت" : "Voice"}<ChoiceList label="Cartesia voice" value={visibleVoices.some(v => v.id === value.voice) ? value.voice : "Not set"} onChange={voice => onChange({ ...value, voice })} options={[{ value: "Not set", label: ar ? "تلقائي" : "Automatic" }, ...visibleVoices.map(v => ({ value: v.id, label: v.name }))]} /></label>
     {!error && voices.length > 0 && visibleVoices.length === 0 && <span role="status">{ar ? "لا توجد أصوات متاحة لهذه اللغة" : "No voices available for this language"}</span>}
     {error && <><span role="alert">{error}</span><Button variant="ghost" size="icon" aria-label="Retry voice catalogue" onClick={() => setRetry((n) => n + 1)}><RotateCcw size={16} /></Button></>}

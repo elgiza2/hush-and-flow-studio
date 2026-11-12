@@ -16,7 +16,8 @@ import "@/styles/calls.css";
 
 const db = supabase as any;
 const RING_MS = 45_000;
-const isAr = () => { try { return (localStorage.getItem("ceyo_language") || navigator.language || "").startsWith("ar"); } catch { return false; } };
+// The app interface is English-only; calls still speak the user's language.
+const isAr = () => false;
 
 type CallRow = { id: string; bot_id: string | null; conversation_id?: string | null; reason: string; kind: "voice" | "video"; status: string; ring_at: string };
 

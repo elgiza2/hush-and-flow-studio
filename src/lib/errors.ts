@@ -82,7 +82,33 @@ export function friendlyUserMessage(
   if (s.includes("empty response") || s.includes("could not parse")) {
     return "We couldn't complete this. Please rephrase your request and try again.";
   }
+  if (s.includes("duplicate key") || s.includes("already exists")) {
+    return "That already exists.";
+  }
+  if (s.includes("abort")) {
+    return "That was interrupted. Please try again.";
+  }
+  if (/\b5\d\d\b/.test(s) || s.includes("internal server") || s.includes("unavailable") || s.includes("bad gateway")) {
+    return "The service is busy right now. Please try again in a moment.";
+  }
   return fallback;
+}
+
+/** Markers of raw technical errors: status codes, JSON, code exceptions, database or transport internals. */
+const TECHNICAL = /\[\d{3}\]|\b[45]\d\d\b|[{}<>]|https?:\/\/|\b(type|reference|syntax|range)error\b|\bundefined\b|\bnull\b|\bnan\b|failed to fetch|networkerror|load failed|\bjwt\b|pgrst|violates|duplicate key|constraint|relation "|column "|unexpected token|\bjson\b|econn|etimedout|timed? ?out|internal server|bad gateway|exception|cannot read prop|is not a function|stack|the database|the service|non-2xx|abort/i;
+
+/**
+ * Text for an error shown inside the app. Clear messages written for people
+ * pass through; raw technical errors become one plain sentence.
+ */
+export function userErrorText(
+  input: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
+  const text = sanitizeErrorMessage(input).trim();
+  if (!text || text === "{}" || text === "[object Object]") return fallback;
+  if (text.length > 180 || TECHNICAL.test(text)) return friendlyUserMessage(text, fallback);
+  return text;
 }
 
 export interface ReportErrorOptions {

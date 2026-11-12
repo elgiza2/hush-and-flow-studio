@@ -263,7 +263,7 @@ export async function runAgentLoop(
       messages.push({ role: "tool", tool_call_id: c.id, content: check.note ? `${result}\n\n${check.note}` : result });
       if (status === "ok" && c.name === "browser" && args.action === "login") {
         const login = JSON.parse(result);
-        const handoff = `افتح [متصفح الروبوت لتسجيل الدخول](${login.url}) وسجّل دخولك بنفسك، ثم ارجع بعد انتهاء الجلسة. الرابط خاص ومؤقت؛ ما تبعتش كلمة مرورك في الشات.`;
+        const handoff = `Open [the bot's sign-in browser](${login.url}) and sign in yourself, then come back when you're done. The link is private and temporary. Never send your password in the chat.`;
         emit({ id: `${c.id}-handoff`, type: "agent.message", parts: [{ type: "text", text: handoff }] });
         return `${answer}${answer ? "\n\n" : ""}${handoff}`;
       }

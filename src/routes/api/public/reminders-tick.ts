@@ -44,13 +44,13 @@ function localParts(tz: string) {
 }
 
 async function morningText(tasks: string[], goals: string[]) {
-  const fallback = tasks.length ? `النهارده عندك: ${tasks.slice(0, 4).join("، ")}` : "يومك فاضي — قولّي عايز تنجز إيه النهارده.";
+  const fallback = tasks.length ? `Today you have: ${tasks.slice(0, 4).join(", ")}` : "Your day is open. Tell me what you want to get done today.";
   if (!tasks.length && !goals.length) return fallback;
   try {
     const { generateCerebrasChatCompletion } = await import("@/lib/ceyo/cerebrasCompletion.server");
     const result = await generateCerebrasChatCompletion([
-      { role: "system", content: "اكتب إشعار صباحي قصير جدًا (جملتين بحد أقصى، أقل من 180 حرف) بالعامية المصرية يلخّص يوم المستخدم ويشجعه. اكتب النص فقط، من غير عنوان أو مقدمات." },
-      { role: "user", content: `مهام النهارده: ${tasks.join(" | ") || "لا يوجد"}. أهدافه: ${goals.join(" | ") || "لا يوجد"}.` },
+      { role: "system", content: "Write a very short morning notification in English (two sentences at most, under 180 characters) that summarizes the user's day and encourages them. Output only the text, with no title or preamble." },
+      { role: "user", content: `Today's tasks: ${tasks.join(" | ") || "none"}. Goals: ${goals.join(" | ") || "none"}.` },
     ], AbortSignal.timeout(20_000));
     const text = result.choices[0]?.message.content || "";
     return text.trim().slice(0, 240) || fallback;
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/public/reminders-tick")({
           .limit(200);
         let reminders = 0;
         for (const n of due ?? []) {
-          const r = await sendToUser(admin, n.user_id, (n.kind === "alarm" ? "⏰ " : "🔔 ") + n.title, n.body || "ميغسي بتفكّرك", {
+          const r = await sendToUser(admin, n.user_id, (n.kind === "alarm" ? "⏰ " : "🔔 ") + n.title, n.body || "Ceyo reminder", {
             kind: n.kind || "task",
             task_id: n.task_id || "",
             path: "/tasks",
@@ -101,7 +101,7 @@ export const Route = createFileRoute("/api/public/reminders-tick")({
             admin.from("life_goals").select("title").eq("user_id", u.user_id).eq("done", false).limit(5),
           ]);
           const body = await morningText((tk.data ?? []).map((x) => x.title), (gl.data ?? []).map((x) => x.title));
-          await sendToUser(admin, u.user_id, "☀️ صباح الخير", body, { kind: "morning", path: "/tasks" });
+          await sendToUser(admin, u.user_id, "☀️ Good morning", body, { kind: "morning", path: "/tasks" });
           mornings++;
         }
         return Response.json({ ok: true, reminders, mornings, fcm: !!process.env["FIREBASE_MESSAGING_API_KEY"] });

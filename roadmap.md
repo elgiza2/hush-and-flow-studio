@@ -459,3 +459,10 @@
 - [x] Add Sign in with Apple button (official Apple artwork) to the sign-in screens. Live sign-in blocked: Apple is switched on in Supabase but its secret key is missing.
 - [x] Add Sign in with Microsoft button to the sign-in screens. Live sign-in blocked: Microsoft (Azure) is switched on in Supabase but its client secret is missing.
 - [x] Fix the failing build so publishing works again (bare `entities` alias removed).
+
+## Polish pass (2026-11-12)
+- [ ] Wallet buy/sell cards: broken boxes with colored edges
+- [ ] Onboarding bot-creation step: same broken boxes
+- [ ] Remove Arabic text from the app (app is English-only)
+- [ ] Clear, friendly error messages for users
+- [ ] Sign-in emails restyled to match the landing page

@@ -49,15 +49,15 @@ import {
 } from "./hub/hubStorage";
 
 const DEMO_AGENTS: AgentInfo[] = [
-  { id: "demo-main", name: "اخوو", description: "المساعد الأساسي", color: "mono", prompt: "", isDefault: true, createdAt: "" },
-  { id: "demo-helper", name: "مساعد", description: "تنظيم المهام والردود", color: "ember", prompt: "", isDefault: false, createdAt: "" },
-  { id: "demo-analyst", name: "محلل", description: "بحث وتحليل البيانات", color: "mint", prompt: "", isDefault: false, createdAt: "" },
-  { id: "demo-lead", name: "تداول — قيادة", description: "منسق الجروب", color: "rose", prompt: "", isDefault: false, createdAt: "" },
+  { id: "demo-main", name: "Ceyo", description: "Your main assistant", color: "mono", prompt: "", isDefault: true, createdAt: "" },
+  { id: "demo-helper", name: "Helper", description: "Organizes tasks and replies", color: "ember", prompt: "", isDefault: false, createdAt: "" },
+  { id: "demo-analyst", name: "Analyst", description: "Research and data analysis", color: "mint", prompt: "", isDefault: false, createdAt: "" },
+  { id: "demo-lead", name: "Trading Lead", description: "Group coordinator", color: "rose", prompt: "", isDefault: false, createdAt: "" },
 ];
-const DEMO_GROUP: AgentGroup = { id: "demo-group", name: "تداول — قيادة", coordinatorId: "demo-lead", memberIds: ["demo-main", "demo-analyst", "demo-helper"], category: "Trading", createdAt: "" };
+const DEMO_GROUP: AgentGroup = { id: "demo-group", name: "Trading Lead", coordinatorId: "demo-lead", memberIds: ["demo-main", "demo-analyst", "demo-helper"], category: "Trading", createdAt: "" };
 const DEMO_SESSIONS: SessionInfo[] = [
-  { id: "demo-session-1", agentId: "demo-lead", title: "موافقتي سارية مع أمر التحويل", status: "idle", createdAt: new Date().toISOString() },
-  { id: "demo-session-2", agentId: "demo-helper", title: "التنظيف خلص، واتفقنا على الخطوة الجاية", status: "idle", createdAt: new Date(Date.now() - 720000).toISOString() },
+  { id: "demo-session-1", agentId: "demo-lead", title: "Transfer order approved", status: "idle", createdAt: new Date().toISOString() },
+  { id: "demo-session-2", agentId: "demo-helper", title: "Cleanup done, next step agreed", status: "idle", createdAt: new Date(Date.now() - 720000).toISOString() },
 ];
 
 function relativeTime(iso: string | undefined, lang: HubLang) {

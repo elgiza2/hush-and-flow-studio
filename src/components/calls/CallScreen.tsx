@@ -15,7 +15,8 @@ import "@/styles/agent.css";
 import "@/styles/agent-hub.css";
 import "@/styles/calls.css";
 
-const isAr = () => { try { return (localStorage.getItem("ceyo_language") || navigator.language || "").startsWith("ar"); } catch { return false; } };
+// The app interface is English-only; calls still speak the user's language.
+const isAr = () => false;
 const orbState = (s: string) => (s === "speaking" ? "talking" : s === "thinking" ? "thinking" : "idle") as "talking" | "thinking" | "idle";
 
 function useTimer(running: boolean) {

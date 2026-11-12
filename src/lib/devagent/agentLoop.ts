@@ -381,7 +381,7 @@ export async function advanceDevRun(
 
   // ---------------------------------------------------------------- scaffold
   if (!(await ws.hasProject())) {
-    await event(db, run, "status", "تجهيز المشروع (React 18 + Vite + Tailwind)");
+    await event(db, run, "status", "Setting up the project (React 18 + Vite + Tailwind)");
     const meta = (run as unknown as { metadata?: { github_url?: string } }).metadata;
     const githubUrl = meta?.github_url;
     const restored = project.github_repo
@@ -397,7 +397,7 @@ export async function advanceDevRun(
       res = githubUrl ? await ws.importGithub(githubUrl) : await ws.scaffold();
     }
     if (res.exitCode !== 0 && !(await ws.hasProject())) {
-      await event(db, run, "error", "فشل تجهيز المشروع", { output: res.stderr.slice(0, 2000) });
+      await event(db, run, "error", "Project setup failed", { output: res.stderr.slice(0, 2000) });
       await patchRun(db, run, { status: "error", error: "Scaffold failed" });
       return true;
     }
@@ -408,7 +408,7 @@ export async function advanceDevRun(
       db,
       run,
       ready ? "status" : "error",
-      ready ? "المشروع جاهز والمعاينة شغالة" : "خادم المعاينة لم يستجب",
+      ready ? "Project ready and preview running" : "Preview server did not respond",
       { preview: project.preview_url },
     );
     if (!ready) {
@@ -443,7 +443,7 @@ export async function advanceDevRun(
     }));
     const { data: inserted } = await db.from("dev_tasks").insert(rows).select("id,position,title,status");
     tasks = (inserted ?? []) as typeof tasks;
-    await event(db, run, "plan", `خطة من ${tasks.length} خطوات`, { tasks: list });
+    await event(db, run, "plan", `Plan with ${tasks.length} steps`, { tasks: list });
   }
 
   // ---------------------------------------------------------------- coding
@@ -455,7 +455,7 @@ export async function advanceDevRun(
     const projectContext = await loadProjectContext(ws, run.prompt);
     if (projectContext.prompt) {
       coderSystem = `${CODER_SYSTEM}\n\n${projectContext.prompt}`;
-      await event(db, run, "context", "قواعد المشروع محمّلة", {
+      await event(db, run, "context", "Project rules loaded", {
         ruleFiles: projectContext.ruleFiles,
         skills: projectContext.skills.map((s) => s.name),
       });
@@ -656,7 +656,7 @@ export async function advanceDevRun(
   if ((gateEvents?.length ?? 0) < 2 && run.intent !== "question") {
     const gaps = await ws.completenessIssues();
     if (gaps.length) {
-      await event(db, run, "completeness", `المشروع ناقص — ${gaps.length} فجوة`, { gaps });
+      await event(db, run, "completeness", `Project incomplete: ${gaps.length} gaps`, { gaps });
       const extra = gaps.map((gap, i) => ({
         run_id: run.id,
         user_id: run.user_id,
@@ -675,7 +675,7 @@ export async function advanceDevRun(
   // Stage 1: `tsc --noEmit` catches type errors the Vite build happily
   // ignores (esbuild strips types), and its messages are far more precise
   // than a bundler stack trace, so the repair loop starts here.
-  await event(db, run, "status", "فحص الأنواع (TypeScript)");
+  await event(db, run, "status", "Checking types (TypeScript)");
   let typed = await ws.typecheck();
   for (let i = 0; typed.exitCode !== 0 && i < MAX_BUILD_FIXES; i++) {
     const fixed = await repairWithModel(
@@ -694,11 +694,11 @@ export async function advanceDevRun(
     db,
     run,
     "status",
-    typed.exitCode === 0 ? "الأنواع سليمة" : "تبقّت أخطاء أنواع",
+    typed.exitCode === 0 ? "Types OK" : "Type errors remain",
     { output: typed.stdout.slice(-1500) },
   );
 
-  await event(db, run, "status", "التحقق من البناء");
+  await event(db, run, "status", "Checking the build");
 
   let build = await ws.build();
   for (let i = 0; build.exitCode !== 0 && i < MAX_BUILD_FIXES; i++) {
@@ -730,7 +730,7 @@ export async function advanceDevRun(
   await ws.normalizeEntrypoint();
   let issues = await ws.staticIssues();
   for (let i = 0; issues.length && i < MAX_BUILD_FIXES; i++) {
-    await event(db, run, "status", `إصلاح ${issues.length} مشكلة تشغيل`, { output: issues.join("\n") });
+    await event(db, run, "status", `Fixing ${issues.length} runtime issues`, { output: issues.join("\n") });
     let raw = await askModel(token, CODER_SYSTEM, [
       {
         role: "user",
@@ -763,7 +763,7 @@ export async function advanceDevRun(
   if (issues.length === 0) build = await ws.build();
 
   const buildOk = build.exitCode === 0;
-  await event(db, run, buildOk ? "build_ok" : "build_failed", buildOk ? "البناء ناجح" : "البناء فشل", {
+  await event(db, run, buildOk ? "build_ok" : "build_failed", buildOk ? "Build succeeded" : "Build failed", {
     output: build.stdout.slice(-2000),
   });
 
@@ -777,7 +777,7 @@ export async function advanceDevRun(
         db,
         run,
         tests.exitCode === 0 ? "tests_ok" : "tests_failed",
-        tests.exitCode === 0 ? "الاختبارات ناجحة" : "بعض الاختبارات فشلت",
+        tests.exitCode === 0 ? "Tests passed" : "Some tests failed",
         { output: `${tests.stdout}\n${tests.stderr}`.slice(-2000) },
       );
     }
@@ -806,14 +806,14 @@ export async function advanceDevRun(
   let shot: string | null = null;
   if (run.allow_deploy && buildOk) {
     if (!project.github_repo) {
-      await event(db, run, "error", "لا يمكن النشر بدون مستودع GitHub خاص", {
+      await event(db, run, "error", "Publishing needs a private GitHub repository", {
         reason: "github_repo missing",
       });
     } else if (project.deploy_url && commit && commit === project.deployed_commit) {
       deployUrl = project.deploy_url;
-      await event(db, run, "status", "النسخة الحالية منشورة بالفعل", { url: deployUrl });
+      await event(db, run, "status", "This version is already published", { url: deployUrl });
     } else {
-      await event(db, run, "status", "جاري النشر");
+      await event(db, run, "status", "Publishing");
       try {
         deployUrl = await ws.publishDist(`megsy-live-${project.id.replace(/-/g, "").slice(0, 12)}`);
         shot = deployUrl ? screenshotUrl(deployUrl) : null;
@@ -836,7 +836,7 @@ export async function advanceDevRun(
             updated_at: new Date().toISOString(),
           })
           .eq("id", project.id);
-        await event(db, run, "deployed", "تم النشر", { url: deployUrl, screenshot: shot });
+        await event(db, run, "deployed", "Published", { url: deployUrl, screenshot: shot });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         await db.from("dev_deploys").insert({
@@ -847,7 +847,7 @@ export async function advanceDevRun(
           status: "failed",
           error: msg.slice(0, 500),
         });
-        await event(db, run, "error", "فشل النشر", { error: msg.slice(0, 500) });
+        await event(db, run, "error", "Publishing failed", { error: msg.slice(0, 500) });
       }
     }
   }
@@ -867,7 +867,7 @@ export async function advanceDevRun(
 
   await patchRun(db, run, {
     status: buildOk ? "done" : "error",
-    summary: (summary || "تم تنفيذ المطلوب.").slice(0, 4000),
+    summary: (summary || "Done.").slice(0, 4000),
     error: buildOk ? null : "Build failed",
     finished_at: new Date().toISOString(),
   });

@@ -38,7 +38,7 @@ export interface ComputerEvent {
 }
 
 
-const SIGN_IN_MESSAGE = "سجّل الدخول أولاً لتشغيل مهام الكمبيوتر. / Please sign in to run computer tasks.";
+const SIGN_IN_MESSAGE = "Please sign in to run computer tasks.";
 
 // The single agent (Browser Use Cloud, DeepSeek) is served by `media-video`
 // under `kind: "agent"`.
