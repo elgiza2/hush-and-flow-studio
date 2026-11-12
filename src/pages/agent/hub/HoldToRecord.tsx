@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 /** WhatsApp-style voice note button: hold to record, slide to cancel, slide up to lock, release to send. */
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, ChevronLeft, ChevronRight, Lock, Mic, Send, Trash2, Loader2 } from "lucide-react";
@@ -9,7 +10,8 @@ const CANCEL_PX = 110;
 const LOCK_PX = 80;
 const MIN_MS = 500;
 
-export function HoldToRecord({ ar, disabled, onRecording, onRecorded }: { ar: boolean; disabled?: boolean; onRecording: (on: boolean) => void; onRecorded: (blob: Blob) => void }) {
+export function HoldToRecord({ ar: _ar, disabled, onRecording, onRecorded }: { ar: boolean; disabled?: boolean; onRecording: (on: boolean) => void; onRecorded: (blob: Blob) => void }) {
+  const ar = false;
   const [state, setState] = useState<null | { locked: boolean; dx: number; dy: number }>(null);
   const [elapsed, setElapsed] = useState(0);
   const session = useRef<{ promise: Promise<Recording>; started: number; locked: boolean; finished: boolean; recorder?: Recording } | null>(null);
@@ -37,7 +39,7 @@ export function HoldToRecord({ ar, disabled, onRecording, onRecorded }: { ar: bo
       if (duration < MIN_MS) { toast(ar ? "اضغط مطوّلاً بعد فتح الميكروفون" : "Hold a little longer after the microphone opens"); return; }
       if (!blob.size) throw new Error(ar ? "التسجيل فاضي، جرّب تاني" : "Recording was empty. Try again.");
       onRecorded(blob);
-    } catch (err) { if (mounted.current && send) toast.error(err instanceof Error ? err.message : "Recording unavailable"); }
+    } catch (err) { if (mounted.current && send) toast.error(userErrorText(err, "Recording unavailable. Please try again.")); }
     finally { if (session.current === s) session.current = null; if (mounted.current) setFinishing(false); }
   };
 

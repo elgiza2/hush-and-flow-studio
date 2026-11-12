@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Pause, Play, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,10 @@ import { getSpeech, sharedAudioContext } from "@/lib/audio/voiceClient";
 import { speechText } from "@/lib/audio/voiceSchema";
 
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
-export function VoiceMessagePlayer({ text, recordingId, agentId, voiceId = "", language = "en", ar, own, catalogueError = "", reload }: {
+export function VoiceMessagePlayer({ text, recordingId, agentId, voiceId = "", language = "en", ar: _ar, own, catalogueError = "", reload }: {
   text: string; recordingId: string; agentId: string; voiceId?: string; language?: string; ar: boolean; own: boolean; catalogueError?: string; reload?: () => void;
 }) {
+  const ar = false;
   const audio = useRef<HTMLAudioElement>(null);
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +37,7 @@ export function VoiceMessagePlayer({ text, recordingId, agentId, voiceId = "", l
         // Decode a copy for WebM's missing duration header; never seek the player to its end.
         const ctx = sharedAudioContext();
         if (ctx) void blob.arrayBuffer().then(bytes => ctx.decodeAudioData(bytes)).then(decoded => { if (!controller.signal.aborted) setDuration(decoded.duration); }).catch(() => {});
-      } catch (e) { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "Audio unavailable"); }
+      } catch (e) { if (!controller.signal.aborted) setError(userErrorText(e, "Audio unavailable. Please try again.")); }
       finally { if (!controller.signal.aborted) setLoading(false); }
     })();
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };

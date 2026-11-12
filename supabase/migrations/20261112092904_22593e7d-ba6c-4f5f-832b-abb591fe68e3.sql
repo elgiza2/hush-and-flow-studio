@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION public.cleanup_account_data(p_user uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='public' AS $$ BEGIN
+UPDATE public.agent_routines SET active=false WHERE user_id=p_user;
+DELETE FROM public.agent_calls WHERE user_id=p_user;
+DELETE FROM public.messages WHERE user_id=p_user;
+DELETE FROM public.people_messages WHERE sender_id=p_user OR bot_id IN (SELECT id FROM public.bots WHERE owner_id=p_user);
+DELETE FROM public.people_thread_bots WHERE added_by=p_user OR bot_id IN (SELECT id FROM public.bots WHERE owner_id=p_user);
+DELETE FROM public.people_thread_members WHERE user_id=p_user;
+DELETE FROM public.people_threads WHERE created_by=p_user AND NOT EXISTS(SELECT 1 FROM public.people_thread_members m WHERE m.thread_id=people_threads.id);
+DELETE FROM public.agent_jobs WHERE user_id=p_user;
+DELETE FROM public.agent_routine_runs WHERE user_id=p_user;
+DELETE FROM public.agent_routines WHERE user_id=p_user;
+DELETE FROM public.conversations WHERE user_id=p_user;
+DELETE FROM public.bot_group_members WHERE group_id IN (SELECT id FROM public.bot_groups WHERE owner_id=p_user) OR bot_id IN (SELECT id FROM public.bots WHERE owner_id=p_user);
+DELETE FROM public.bot_groups WHERE owner_id=p_user;
+UPDATE public.phone_numbers SET owner_id=NULL,bot_id=NULL,assigned_at=NULL WHERE owner_id=p_user;
+DELETE FROM public.phone_calls WHERE user_id=p_user;
+DELETE FROM public.bot_phone_agents WHERE bot_id IN (SELECT id FROM public.bots WHERE owner_id=p_user);
+UPDATE public.profiles SET primary_bot_id=NULL WHERE id=p_user;
+DELETE FROM public.bots WHERE owner_id=p_user;
+DELETE FROM public.user_settings WHERE user_id=p_user;
+END $$;
+REVOKE ALL ON FUNCTION public.cleanup_account_data(uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.cleanup_account_data(uuid) TO service_role;

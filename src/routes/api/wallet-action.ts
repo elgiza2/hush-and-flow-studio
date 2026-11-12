@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/wallet-action")({
         const parsed = Body.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return Response.json({ error: "Invalid request" }, { status: 400, headers: noStore });
         const b = parsed.data;
+        const execute = async (): Promise<Response> => {
         try {
           const s = await import("@/lib/wallet/send.server");
           const { getOrCreateWallet } = await import("@/lib/wallet/wallet.server");
@@ -53,6 +54,12 @@ export const Route = createFileRoute("/api/wallet-action")({
         } catch (e) {
           return Response.json({ error: e instanceof Error ? e.message.slice(0, 200) : "Action failed" }, { status: 400, headers: noStore });
         }
+        };
+        if (b.action !== "send" && b.action !== "swap") return execute();
+        const key = request.headers.get("Idempotency-Key");
+        if (!key || !z.string().uuid().safeParse(key).success) return Response.json({ error: "Please refresh and confirm the transfer again." }, { status: 400, headers: noStore });
+        const { guardedWalletAction } = await import("@/lib/wallet/operations.server");
+        return guardedWalletAction(auth.userId, key, JSON.stringify(b), execute);
       },
     },
   },

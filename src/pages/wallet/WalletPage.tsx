@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDownToLine, Check, ChevronLeft, Copy, QrCode, Search, Send, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { userErrorText } from "@/lib/errors";
 import SEOHead from "@/components/common/SEOHead";
 import { addressFor, fetchMarkets, fetchWallet, WALLET_TOKENS, type Addresses, type Market } from "./walletTokens";
 import MarketsView, { CoinDetail } from "./MarketsView";
@@ -37,7 +38,7 @@ export default function WalletPage() {
   useEffect(() => {
     let ctrl = new AbortController();
     const load = () => fetchMarkets(ctrl.signal).then((m) => { setMarkets(m); setPriceError(false); }).catch(() => { if (!ctrl.signal.aborted) setPriceError(true); });
-    const loadWallet = () => fetchWallet().then((w) => { setAddresses(w.addresses); setBalances(w.balances); setWalletError(""); }).catch((e) => setWalletError(e instanceof Error ? e.message : "Wallet unavailable"));
+    const loadWallet = () => fetchWallet().then((w) => { setAddresses(w.addresses); setBalances(w.balances); setWalletError(""); }).catch((e) => setWalletError(userErrorText(e, "Balance unavailable. Please try again.")));
     load(); void loadWallet();
     const t = setInterval(() => { ctrl.abort(); ctrl = new AbortController(); load(); }, 30000);
     const tw = setInterval(() => { void loadWallet(); }, 60000);
@@ -92,7 +93,7 @@ export default function WalletPage() {
           </header>
           {tab === "trade" ? <MarketsView onOpen={setCoin} /> : <>
           <p className="wl-acct">Account 1</p>
-          <h1 className="wl-bal">{usd(total)}</h1>
+          <h1 className="wl-bal">{walletError || !addresses || priceError ? "—" : usd(total)}</h1>
           <div className="wl-qa">
             <button type="button" onClick={() => setView("send")}><span><Send size={22} /></span>Send</button>
             <button type="button" onClick={() => setView("receive")}><span><ArrowDownToLine size={22} /></span>Receive</button>
@@ -118,7 +119,7 @@ export default function WalletPage() {
           <label className="wl-search"><Search size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" /></label>
           <div style={{ height: 14 }} />
           {rows(filtered)}
-          {filtered.length === 0 && <p className="wl-note">{q ? "No coins match your search." : "You have no balance to send yet."}</p>}
+          {filtered.length === 0 && <p className="wl-note">{walletError || !addresses ? "Balance unavailable. Please wait or try again." : q ? "No coins match your search." : "You have no balance to send yet."}</p>}
           </>}
         </>
       )}

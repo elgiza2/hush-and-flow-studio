@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import { walletAction, type TradeTarget } from "./walletTokens";
@@ -7,6 +8,8 @@ export default function TradePanel({ target: net, symbol, side, onClose }: { tar
   const network = net.network, mint = net.token;
   const input = side === "buy" ? net.pay : mint, output = side === "buy" ? mint : net.pay;
   const inSym = side === "buy" ? net.paySym : symbol, outSym = side === "buy" ? symbol : net.paySym;
+  const [confirmationId] = useState(() => crypto.randomUUID());
+  const [balanceError, setBalanceError] = useState("");
   const [amount, setAmount] = useState("");
   const [bal, setBal] = useState<number | null>(null);
   const [q, setQ] = useState<{ out: number; impact: number } | null>(null);
@@ -15,18 +18,18 @@ export default function TradePanel({ target: net, symbol, side, onClose }: { tar
   const [tx, setTx] = useState("");
   const n = Number(amount);
 
-  useEffect(() => { walletAction<{ balance: number }>({ action: "balance", network, mint: input }).then((r) => setBal(r.balance)).catch(() => setBal(0)); }, [input, network]);
+  useEffect(() => { walletAction<{ balance: number }>({ action: "balance", network, mint: input }).then((r) => setBal(r.balance)).catch((e) => { setBal(null); setBalanceError(userErrorText(e, "Balance unavailable. Please try again.")); }); }, [input, network]);
   useEffect(() => {
     setQ(null); setErr("");
     if (!(n > 0)) return;
-    const t = setTimeout(() => walletAction<{ out: number; impact: number }>({ action: "quote", network, inputMint: input, outputMint: output, amount: n }).then(setQ).catch((e) => setErr(e.message)), 450);
+    const t = setTimeout(() => walletAction<{ out: number; impact: number }>({ action: "quote", network, inputMint: input, outputMint: output, amount: n }).then(setQ).catch((e) => setErr(userErrorText(e))), 450);
     return () => clearTimeout(t);
   }, [n, input, output, network]);
 
   const go = async () => {
     setBusy(true); setErr("");
-    try { const r = await walletAction<{ tx: string }>({ action: "swap", network, inputMint: input, outputMint: output, amount: n }); setTx(String(r.tx)); }
-    catch (e) { setErr(e instanceof Error ? e.message : "Trade failed"); }
+    try { const r = await walletAction<{ tx: string }>({ action: "swap", network, inputMint: input, outputMint: output, amount: n }, confirmationId); setTx(String(r.tx)); }
+    catch (e) { setErr(userErrorText(e, "Trade unavailable. Please try again.")); }
     setBusy(false);
   };
 
@@ -41,8 +44,8 @@ export default function TradePanel({ target: net, symbol, side, onClose }: { tar
           <p className="wl-sub">Available {bal === null ? "…" : bal.toLocaleString("en-US", { maximumFractionDigits: 6 })} {inSym}</p>
           <div className="wl-receive"><span>You receive</span><strong>{q ? q.out.toLocaleString("en-US", { maximumFractionDigits: 6 }) : "—"} {outSym}</strong>{q && q.impact > 1 && <small className="wl-err">Price impact {q.impact.toFixed(2)}%</small>}</div>
           {bal !== null && n > bal && <p className="wl-err">Not enough {inSym}</p>}
-          {err && <p className="wl-err">{err}</p>}
-          <button type="button" className="wl-btn wl-btn-main wl-full" disabled={!q || busy || (bal !== null && n > bal)} onClick={go}>{busy && <Loader2 className="wl-spin" size={18} />}{side === "buy" ? "Buy" : "Sell"}</button>
+          {(err || balanceError) && <p className="wl-err" role="alert">{err || balanceError}</p>}
+          <button type="button" className="wl-btn wl-btn-main wl-full" disabled={!q || busy || bal === null || !!balanceError || n > bal} onClick={go}>{busy && <Loader2 className="wl-spin" size={18} />}{side === "buy" ? "Buy" : "Sell"}</button>
           <p className="wl-disclaimer">{`Trades run on ${net.label} with 1% max slippage. A small ${net.paySym} network fee applies.`}</p>
         </>)}
       </div>

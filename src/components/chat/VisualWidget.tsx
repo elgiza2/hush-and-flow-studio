@@ -29,7 +29,7 @@ export default function VisualWidget({ html, onSend }: { html: string; onSend?: 
   useEffect(() => {
     const receive = (event: MessageEvent) => {
       if (event.source !== frame.current?.contentWindow || !event.data || typeof event.data !== "object") return;
-      if (event.data.type === "ceyo-widget-size" && typeof event.data.height === "number" && Number.isFinite(event.data.height)) setHeight(Math.max(120, Math.min(1600, event.data.height)));
+      if (event.data.type === "ceyo-widget-size" && typeof event.data.height === "number" && Number.isFinite(event.data.height)) setHeight(Math.max(120, Math.min(10000, event.data.height)));
       if (event.data.type === "ceyo-widget-send" && typeof event.data.text === "string" && event.data.text.trim() && event.data.text.length <= 4000) onSend?.(event.data.text);
     };
     window.addEventListener("message", receive);

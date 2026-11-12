@@ -1,4 +1,7 @@
 /** @doc Permanently delete the account and all associated data. */
+import { useServerFn } from "@tanstack/react-start";
+import { deleteOwnAccount } from "@/lib/account.functions";
+import { userErrorText } from "@/lib/errors";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +22,7 @@ import ProfileGlassShell, {
 
 const DeleteAccountPage = () => {
   const navigate = useNavigate();
+  const deleteAccount = useServerFn(deleteOwnAccount);
   const isMobile = useIsMobile();
   const [confirmText, setConfirmText] = useState("");
   const [password, setPassword] = useState("");
@@ -29,21 +33,12 @@ const DeleteAccountPage = () => {
     if (!password.trim()) return toast.error(authT("enterPasswordConfirm"));
     setIsDeleting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) throw new Error("User not found");
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email, password,
-      });
-      if (signInError) {
-        toast.error(authT("incorrectPassword"));
-        setIsDeleting(false);
-        return;
-      }
-      toast.success(authT("accountDeletionRequested"));
+      await deleteAccount({ data: { confirmation: confirmText, password } });
+      toast.success("Your account has been deleted.");
       await supabase.auth.signOut();
       navigate("/auth");
     } catch (error: any) {
-      toast.error(translateAuthError(error, "deleteAccountFailed"));
+      toast.error(userErrorText(error, "Could not delete your account. Please try again."));
     } finally {
       setIsDeleting(false);
     }
@@ -53,7 +48,7 @@ const DeleteAccountPage = () => {
     { label: "Profile Information", hint: "Name, avatar, contact details" },
     { label: "All Conversations", hint: "Chats, messages, threads" },
     { label: "Generated Images & Videos", hint: "Every asset you created" },
-    { label: "MC & Subscription", hint: "Credits and active plans" },
+    { label: "Subscription", hint: "Credits and active plans" },
   ];
 
   const goBack = () => navigate("/settings/security");

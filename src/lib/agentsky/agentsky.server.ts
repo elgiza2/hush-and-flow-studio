@@ -197,6 +197,7 @@ export function sign(value: string): string {
   return createHmac("sha256", secret()).update(value).digest("base64url").slice(0, 32);
 }
 export function verify(value: string, sig: string): boolean {
+  if (!/^[A-Za-z0-9_-]{32}$/.test(sig || "")) return false;
   const a = Buffer.from(sign(value));
   const b = Buffer.from(sig || "");
   return a.length === b.length && timingSafeEqual(a, b);

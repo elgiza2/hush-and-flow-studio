@@ -15,13 +15,14 @@ export function backgroundReady(): boolean {
 export async function runJob(jobId: string): Promise<string> {
   if (!/^[a-f0-9-]{36}$/i.test(jobId)) throw new Error("Invalid job");
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-  const { data: job } = await db
+  const { data: job, error: claimError } = await db
     .from("agent_jobs")
     .update({ status: "running" })
     .eq("id", jobId)
     .eq("status", "queued")
     .select("*")
     .maybeSingle();
+  if (claimError) throw new Error("Could not claim background task");
   if (!job) return "skipped";
   let cursor = job.cursor_at;
   const poll = async () => {
@@ -42,7 +43,8 @@ export async function runJob(jobId: string): Promise<string> {
     );
     if (error) throw new Error(error.message);
     const waiting = needsBrowserLogin(transcript);
-    await db.from("agent_jobs").update({ status: waiting ? "failed" : "completed", result: text, error: waiting ? "Sign-in required; send the task again after login" : null }).eq("id", job.id);
+    const { error: stateError } = await db.from("agent_jobs").update({ status: waiting ? "failed" : "completed", result: text, error: waiting ? "Sign-in required; send the task again after login" : null }).eq("id", job.id).eq("status", "running");
+    if (stateError) throw new Error("Could not save task completion");
     await db.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", job.conversation_id);
     if (waiting) return "login_required";
     // Ring the user the moment the task is done; the bot opens the call with the result.
@@ -50,7 +52,8 @@ export async function runJob(jobId: string): Promise<string> {
     if (callError) console.error("Task finished, but its completion call could not be saved");
     return "completed";
   } catch (e) {
-    await db.from("agent_jobs").update({ status: "failed", error: "Background work failed" }).eq("id", job.id);
+    const { error: failureError } = await db.from("agent_jobs").update({ status: "failed", error: "Task stopped. Review its result before trying again." }).eq("id", job.id).eq("status", "running");
+    if (failureError) console.error("Could not save background failure");
     throw e;
   }
 }
@@ -58,6 +61,10 @@ export async function runJob(jobId: string): Promise<string> {
 /** Picks up jobs that were queued but never started (e.g. the trigger was lost). */
 export async function runStaleJobs(): Promise<{ id: string; status: string }[]> {
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+  // Never blindly replay abandoned work: an external side effect may have happened.
+  const expired = new Date(Date.now() - 15 * 60_000).toISOString();
+  const { error: recoveryError } = await db.from("agent_jobs").update({ status: "failed", error: "Task interrupted. Review any delivered result before starting it again." }).eq("status", "running").lt("updated_at", expired);
+  if (recoveryError) throw new Error("Could not recover interrupted tasks");
   const before = new Date(Date.now() - 60_000).toISOString();
   const { data } = await db.from("agent_jobs").select("id").eq("status", "queued").lt("created_at", before).limit(3);
   const out: { id: string; status: string }[] = [];

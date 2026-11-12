@@ -24,13 +24,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Meet your main Ceyo bot, create personal bots, coordinate group chats and pick up every conversation from one calm home.",
+          "Ceyo personal bots work on complete projects with isolated cloud computers, specialist teams, 1,000+ app connections, calls and a built-in wallet. Plans start at $20/month.",
       },
       { property: "og:title", content: "Ceyo — Your Personal Bots and Group Chats" },
       {
         property: "og:description",
         content:
-          "Create personal bots and coordinated group chats, then continue every conversation from one clean, animated home.",
+          "Build a specialist team for complete projects with Ceyo. Explore isolated bot computers, integrations, calls, wallet and paid plans.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
       {
         name: "twitter:description",
         content:
-          "Create personal bots and coordinated group chats, then continue every conversation from one clean, animated home.",
+          "Build a specialist team for complete projects with Ceyo. Explore isolated bot computers, integrations, calls, wallet and paid plans.",
       },
     ],
   }),

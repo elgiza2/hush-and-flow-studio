@@ -58,6 +58,7 @@ export function friendlyUserMessage(
 ): string {
   const s = sanitizeErrorMessage(input).toLowerCase();
   if (!s) return fallback;
+  if (/subscription_required|upgrade_required|subscription required|subscribe.*first/.test(s)) return "An active subscription is required. Choose a plan to continue.";
   if (s.includes("insufficient") || s.includes("credit") || s.includes("402")) {
     return "You're out of credits. Top up to continue.";
   }

@@ -1346,6 +1346,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      cleanup_account_data: { Args: { p_user: string }; Returns: undefined }
       complete_onboarding: {
         Args: {
           p_age: number

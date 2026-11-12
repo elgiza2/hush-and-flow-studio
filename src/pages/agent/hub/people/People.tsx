@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal } from "lucide-react";
@@ -23,7 +24,7 @@ function botAgent(b: ThreadBot): Pick<AgentInfo, "name" | "color" | "isDefault">
 
 /** Asks once for a username; renders children when one is set. */
 export function UsernameGate({ lang, children }: { lang: HubLang; children: React.ReactNode }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [username, setUsername] = useState<string | null | undefined>(undefined);
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
@@ -40,14 +41,14 @@ export function UsernameGate({ lang, children }: { lang: HubLang; children: Reac
     <p className="pp-muted">{ar ? "صحابك وتيمك هيلاقوك بيه ويكلموك." : "Friends and teammates find and message you with it."}</p>
     <label className="pp-field"><AtSign size={16} /><input value={value} onChange={(e) => setValue(normalizeUsername(e.target.value))} placeholder="username" autoCapitalize="none" autoCorrect="off" maxLength={20} onKeyDown={(e) => { if (e.key === "Enter" && USERNAME_RE.test(value)) void save(); }} /></label>
     <small className="pp-muted">{ar ? "من 3 لـ 20 حرف إنجليزي صغير أو أرقام أو _" : "3–20 lowercase letters, numbers or _"}</small>
-    {error && <p className="pp-error" role="alert">{error}</p>}
+    {error && <p className="pp-error" role="alert">{userErrorText(error)}</p>}
     <button type="button" className="pp-primary" disabled={busy || !USERNAME_RE.test(value)} onClick={() => void save()}>{ar ? "حفظ" : "Save"}</button>
   </section>;
 }
 
 /** People chats in the home list. */
 export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang; agents: AgentInfo[]; active: string | null; onOpen: (id: string) => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [groupBots, setGroupBots] = useState<Record<string, ThreadBot[]>>({});
   const [me, setMe] = useState("");
@@ -93,7 +94,7 @@ export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang;
 }
 
 function PeoplePicker({ lang, picked, onPick }: { lang: HubLang; picked: PersonInfo[]; onPick: (p: PersonInfo) => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [q, setQ] = useState("");
   const [results, setResults] = useState<PersonInfo[]>([]);
   useEffect(() => {
@@ -113,7 +114,7 @@ function PeoplePicker({ lang, picked, onPick }: { lang: HubLang; picked: PersonI
 }
 
 export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang: HubLang; mode: "dm" | "group"; agents: AgentInfo[]; onCancel: () => void; onOpened: (id: string) => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [picked, setPicked] = useState<PersonInfo[]>([]);
   const [bots, setBots] = useState<string[]>([]);
   const [name, setName] = useState("");
@@ -142,7 +143,7 @@ export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang
           return <button type="button" key={a.id} className="pp-result" data-on={on} onClick={() => setBots((cur) => on ? cur.filter((x) => x !== a.id) : [...cur, a.id])}><BotAvatar agent={a} size={32} /><span><strong>{a.name}</strong><small>{a.description}</small></span>{on && <Check size={16} />}</button>;
         })}</div>
       </>}
-      {error && <p className="pp-error" role="alert">{error}</p>}
+      {error && <p className="pp-error" role="alert">{userErrorText(error)}</p>}
       <button type="button" className="pp-primary" disabled={!ready || busy} onClick={() => void submit()}>{mode === "dm" ? (ar ? "ابدأ المحادثة" : "Start chat") : (ar ? "إنشاء الجروب" : "Create group")}</button>
     </UsernameGate>
   </section>;
@@ -155,7 +156,7 @@ function fmtTime(at?: string) {
 }
 
 export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; threadId: string; agents: AgentInfo[]; onBack: () => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [me, setMe] = useState("");
   const [thread, setThread] = useState<{ kind: "direct" | "group"; name: string | null } | null>(null);
   const [info, setInfo] = useState<{ members: PersonInfo[]; bots: ThreadBot[] }>({ members: [], bots: [] });
@@ -174,7 +175,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     void myUserId().then((id) => alive && setMe(id)).catch(() => {});
     void peopleApi.thread(threadId).then((t) => alive && setThread(t)).catch(() => {});
     void reloadInfo();
-    void peopleApi.messages(threadId).then((m) => { if (alive) setMessages(m); }).catch((e) => setError(e.message));
+    void peopleApi.messages(threadId).then((m) => { if (alive) setMessages(m); }).catch((e) => setError(userErrorText(e)));
     void peopleApi.markRead(threadId);
     const channel = supabase.channel(`people-thread-${threadId}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages", filter: `thread_id=eq.${threadId}` }, (p: any) => {
@@ -213,7 +214,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       setMessages((cur) => cur.some((x) => x.id === m.id) ? cur : [...cur, m]);
       if (info.bots.length) {
         setBotsBusy((n) => n + 1);
-        void peopleApi.askBots(threadId, m.id).finally(() => {
+        void peopleApi.askBots(threadId, m.id).catch((e) => setError(userErrorText(e))).finally(() => {
           setBotsBusy((n) => Math.max(0, n - 1));
           // Pull replies in case the live update was missed.
           void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
@@ -248,7 +249,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       </div>}
     </header>
 
-    {error && <div className="cx-toast" data-tone="error" role="alert"><span><strong>{error}</strong></span></div>}
+    {error && <div className="cx-toast" data-tone="error" role="alert"><span><strong>{userErrorText(error)}</strong></span></div>}
 
     <div className="cx-scroll" ref={scroller}>
       {!messages.length ? (
@@ -316,10 +317,10 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       <div className="cx-sheet pp-sheet" role="dialog" aria-label={panel === "people" ? (ar ? "ضيف شخص" : "Add person") : (ar ? "ضيف بوت" : "Add bot")}>
         <span className="cx-grip" />
         {panel === "people"
-          ? <PeoplePicker lang={lang} picked={info.members} onPick={(p) => { void peopleApi.addMember(threadId, p.username || "").then(reloadInfo).catch((e) => setError(e.message)); }} />
+          ? <PeoplePicker lang={lang} picked={info.members} onPick={(p) => { void peopleApi.addMember(threadId, p.username || "").then(reloadInfo).catch((e) => setError(userErrorText(e))); }} />
           : <div className="pp-results">{agents.map((a) => {
               const on = info.bots.some((b) => b.id === a.id);
-              return <button type="button" key={a.id} className="pp-result" data-on={on} disabled={on} onClick={() => { void peopleApi.addBot(threadId, a.id).then(reloadInfo).catch((e) => setError(e.message)); }}><BotAvatar agent={a} size={30} /><span><strong>{a.name}</strong></span>{on && <Check size={16} />}</button>;
+              return <button type="button" key={a.id} className="pp-result" data-on={on} disabled={on} onClick={() => { void peopleApi.addBot(threadId, a.id).then(reloadInfo).catch((e) => setError(userErrorText(e))); }}><BotAvatar agent={a} size={30} /><span><strong>{a.name}</strong></span>{on && <Check size={16} />}</button>;
             })}</div>}
       </div>
     </>}

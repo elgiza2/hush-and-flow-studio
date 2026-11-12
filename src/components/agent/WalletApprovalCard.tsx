@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { Wallet, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,13 +14,14 @@ export function WalletApprovalCard({ data }: { data: Record<string, any> }) {
   const save = (s: typeof status, t = "") => { setStatus(s); setTx(t); localStorage.setItem(key, `${s}|${t}`); };
   const net = data.pay ? { pay: String(data.pay), paySym: String(data.paySym), label: String(data.label) } : undefined;
   const confirm = async () => {
+    if (data.action !== "send" && !net) { setError("Trade details unavailable."); return; }
     setStatus("running"); setError("");
     try {
       const r = data.action === "send"
-        ? await walletAction<{ tx: string }>({ action: "send", token: data.token, to: data.to, amount: String(data.amount) })
-        : await walletAction<{ tx: string }>({ action: "swap", network: data.network, inputMint: data.side === "buy" ? net!.pay : data.token, outputMint: data.side === "buy" ? data.token : net!.pay, amount: Number(data.amount) });
+        ? await walletAction<{ tx: string }>({ action: "send", token: data.token, to: data.to, amount: String(data.amount) }, String(data.id))
+        : await walletAction<{ tx: string }>({ action: "swap", network: data.network, inputMint: data.side === "buy" ? net?.pay : data.token, outputMint: data.side === "buy" ? data.token : net?.pay, amount: Number(data.amount) }, String(data.id));
       save("done", String(r.tx));
-    } catch (e) { setStatus("failed"); setError(e instanceof Error ? e.message : "Action failed"); }
+    } catch (e) { setStatus("failed"); setError(userErrorText(e, "Could not complete this action.")); }
   };
   const title = data.action === "send" ? `Send ${data.amount} ${data.symbol}` : `${data.side === "buy" ? "Buy" : "Sell"} ${data.symbol} · ${data.amount} ${data.side === "buy" ? net?.paySym : data.symbol}`;
   return <div className="cx-card border border-border rounded-lg p-3">

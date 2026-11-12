@@ -10,7 +10,7 @@ export async function getUsageStatus(db: SupabaseClient): Promise<UsageStatus> {
 /** Owner-scoped read, also used before issuing provider access tokens. */
 export async function checkUsageAvailable(db: SupabaseClient): Promise<void> {
   const data = await getUsageStatus(db);
-  if (!data.isPaid && data.remainingUsd < data.stepUsd) throw new Error(EXHAUSTED_MESSAGE);
+  if (!data.isPaid) throw new Error(EXHAUSTED_MESSAGE);
 }
 export function usageFailure(error: unknown): Response {
   const message = error instanceof Error ? error.message : "Could not check usage. Please try again later.";

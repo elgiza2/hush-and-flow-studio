@@ -51,30 +51,9 @@ export function cancelNativeTask(id: string): void {
   }
 }
 
-async function saveToken(token: string) {
-  if (!token) return;
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) return;
-  await supabase
-    .from("device_push_tokens")
-    .upsert({ user_id: data.user.id, token, platform: "android", last_seen_at: new Date().toISOString() }, { onConflict: "token" });
-}
-
-/** Call once after sign-in: registers the push token and re-syncs upcoming tasks to the phone. */
+/** Closed-test native build: do not query retired task/push tables. */
 export async function bootNativeBridge(): Promise<void> {
-  const a = api();
-  if (!a) return;
-  window.megsyNativePushToken = (token) => void saveToken(token);
-  try {
-    a.requestPushToken?.();
-  } catch {
-    /* ignore */
-  }
-  const { data } = await supabase
-    .from("life_tasks")
-    .select("id,title,kind,remind_at,status")
-    .neq("status", "done")
-    .gt("remind_at", new Date().toISOString())
-    .limit(100);
-  for (const t of data ?? []) syncNativeTask(t);
+  // Native alarms remain available through explicit syncNativeTask calls.
+  // Background push is unavailable until an authorized transport is configured.
+  if (!api()) return;
 }

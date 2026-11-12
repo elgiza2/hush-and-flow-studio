@@ -66,7 +66,7 @@ const en: LandingCopy = {
     { q: "Do I need to mention a bot for it to reply in a group?", a: "No. Every bot in the group replies on its own. Mentioning a bot only narrows the reply to that bot." },
     { q: "Can a bot work when I'm not in the app?", a: "Yes. Routines let a bot repeat a task every few minutes, daily or weekly and send the result to your chat." },
     { q: "Does Ceyo know my passwords?", a: "No. When a website needs a login, you sign in yourself on a secure screen, the bot never asks for your password." },
-    { q: "Is there a phone app?", a: "Yes, Ceyo has an Android app, and you can also use it in any browser." },
+    { q: "Is there a phone app?", a: "Ceyo is available on the web now. The Android app is in closed testing and is not publicly available on Google Play yet." },
     { q: "Is it free?", a: "No. Ceyo needs a subscription before you can use it. Plans start with Plus." },
     { q: "Can it handle a whole project?", a: "Yes. Split a project between bots: one does the research and marketing, one writes the code, one makes the images and videos. Each works on its own computer at the same time." },
     { q: "Can bots really call people?", a: "Yes. Bots can make phone calls, and you can video call your bot face to face." },

@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 /** Subscribe popup: Kashier Direct API (card / Vodafone Cash, EGP) in Egypt, Dodo elsewhere, Google Play on Android. */
 import { useEffect, useState } from "react";
 import { Check, Loader2, ShieldCheck, X } from "lucide-react";
@@ -35,7 +36,7 @@ const digits = (v: string, n: number) => v.replace(/\D/g, "").slice(0, n);
 
 export function CheckoutSheet({ tier, name, interval, onClose }: { tier: Tier; name: string; interval: BillingInterval; onClose: () => void }) {
   const usd = priceOf(tier, interval) ?? 0;
-  const ar = useUserLang().startsWith("ar");
+  const ar = false;
   const native = playApi();
   const playNative = isPlayApp();
   const androidBilling = playNative || !!native;
@@ -73,7 +74,7 @@ export function CheckoutSheet({ tier, name, interval, onClose }: { tier: Tier; n
   useEffect(() => {
     if (androidBilling) return;
     billing<Quote>({ action: "quote", tier, interval, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "" })
-      .then(setQuote).catch((e) => setError((e as Error).message));
+      .then(setQuote).catch((e) => setError(userErrorText(e)));
   }, [tier, interval, androidBilling]);
 
   const done = () => { setState("paid"); window.dispatchEvent(new Event(CREDITS_CHANGED_EVENT)); };
@@ -92,7 +93,7 @@ export function CheckoutSheet({ tier, name, interval, onClose }: { tier: Tier; n
     return () => clearInterval(t);
   }, [orderId, state, check]);
 
-  const fail = (e: unknown) => { setState("error"); setError((e as Error).message); };
+  const fail = (e: unknown) => { setState("error"); setError(userErrorText(e)); };
 
   const payPlay = async () => {
     setState("loading");
@@ -153,7 +154,7 @@ export function CheckoutSheet({ tier, name, interval, onClose }: { tier: Tier; n
   const busy = state === "loading";
   const kashier = quote?.provider === "kashier";
   const reset = () => { setChosen(false); setState("idle"); setFrame(""); setError(""); setOrderId(""); };
-  const errorBox = error ? <p role="alert" className="cbox-error">{error}</p> : null;
+  const errorBox = error ? <p role="alert" className="cbox-error">{userErrorText(error)}</p> : null;
   const heading = state === "paid" ? "Payment complete" : state === "waiting" ? (frame ? "Secure payment" : "Confirming payment") : androidBilling ? "Google Play" : method === "wallet" ? "Vodafone Cash" : "Card details";
   const content = state === "paid" ? (
     <div className="cbox-status" role="status"><span className="cbox-success"><Check /></span><h3>You're subscribed</h3><p>Ceyo {name} is now active.</p><Button variant="ghost" className="cbox-cta" onClick={onClose}>Continue</Button></div>

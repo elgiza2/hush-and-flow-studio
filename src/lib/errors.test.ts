@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { userErrorText } from "./errors";
 
 describe("userErrorText", () => {
+  it("explains subscription-only use", () => expect(userErrorText("subscription_required 402")).toBe("An active subscription is required. Choose a plan to continue."));
   it("keeps clear messages written for people", () => {
     expect(userErrorText(new Error("Not enough SOL for the network fee."))).toBe("Not enough SOL for the network fee.");
   });

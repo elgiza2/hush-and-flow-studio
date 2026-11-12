@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 import { useState } from "react";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
 import { walletAction } from "./walletTokens";
@@ -5,6 +6,7 @@ import { walletAction } from "./walletTokens";
 type Props = { token: { id: string; name: string; symbol: string; network: string }; balance: number; price: number; image?: string; onBack: () => void; onDone: () => void };
 
 export default function SendForm({ token, balance, price, image, onBack, onDone }: Props) {
+  const [confirmationId] = useState(() => crypto.randomUUID());
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"form" | "confirm" | "sending" | "done">("form");
@@ -15,8 +17,8 @@ export default function SendForm({ token, balance, price, image, onBack, onDone 
 
   const send = async () => {
     setStep("sending"); setErr("");
-    try { const r = await walletAction<{ tx: string }>({ action: "send", token: token.id, to: to.trim(), amount }); setTx(String(r.tx)); setStep("done"); }
-    catch (e) { setErr(e instanceof Error ? e.message : "Send failed"); setStep("confirm"); }
+    try { const r = await walletAction<{ tx: string }>({ action: "send", token: token.id, to: to.trim(), amount }, confirmationId); setTx(String(r.tx)); setStep("done"); }
+    catch (e) { setErr(userErrorText(e, "Could not send. Please try again.")); setStep("confirm"); }
   };
 
   if (step === "done") return (

@@ -27,9 +27,14 @@ describe("Usage enforcement", () => {
     vi.spyOn(db, "rpc").mockResolvedValue({ data: { isPaid: false, remainingUsd: 0, stepUsd: 0.01 }, error: null, count: null, status: 200, statusText: "OK" });
     await expect(checkUsageAvailable(db)).rejects.toThrow("Usage limit reached");
   });
-  it("allows a free user with remaining usage", async () => {
+  it("blocks a free user even with a legacy remaining allowance", async () => {
     const db = createClient("https://example.supabase.co", "test");
     vi.spyOn(db, "rpc").mockResolvedValue({ data: { isPaid: false, remainingUsd: 0.01, stepUsd: 0.01 }, error: null, count: null, status: 200, statusText: "OK" });
+    await expect(checkUsageAvailable(db)).rejects.toThrow("Subscribe");
+  });
+  it("allows an active paid subscription without free allowance", async () => {
+    const db = createClient("https://example.supabase.co", "test");
+    vi.spyOn(db, "rpc").mockResolvedValue({ data: { isPaid: true, remainingUsd: 0, stepUsd: 0.01 }, error: null, count: null, status: 200, statusText: "OK" });
     await expect(checkUsageAvailable(db)).resolves.toBeUndefined();
   });
   it("does not disguise an accounting outage as exhaustion", () => {

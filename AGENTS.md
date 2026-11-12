@@ -51,3 +51,8 @@
 - RootComponent provides the router-owned QueryClient around Outlet; never assume router context alone supplies React Query hooks or introduce a second app client. Why: pricing and future queries must work in the actual app, not only provider-wrapped isolated tests.
 - Agent-loop usage charges are owner-bound atomic server RPCs before each model step; usage reads are invoker-rights and displayed only as percentages. Why: concurrent requests must not overspend free allowance or expose other accounts.
 - Landing hosts are listed in src/config/domains.ts; "/" there lazily renders a landing page from src/components/landing (isolated srcdoc frame reusing the real orb CSS) and never loads the app boot; the Android and web hosts never show landing pages. Why: landing stays web-only and fast, and bots look identical to the app.
+
+- Landing plan prices are rendered from the shared payment catalogue; AI-facing static files list only public pages. Why: published descriptions must not invent prices, free use or private routes.
+- Wallet creation is serialized in service-only database functions; transfer reservations persist by owner and operation key, and unknown outcomes are never replayed automatically. Why: concurrent requests must not replace keys or duplicate transfers.
+- Account deletion reauthenticates the caller and removes owned artifacts/data before deleting Supabase Auth; interrupted jobs stop for review rather than repeating external side effects. Why: destructive operations require verified ownership and honest completion.
+- Transactional email components share the CeyoMessage shell; hosted Auth templates are updated only through an operator-only Management API script and read-back. Why: branding must not replace native OTP or expose credentials.

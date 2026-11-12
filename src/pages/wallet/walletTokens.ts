@@ -41,13 +41,19 @@ export async function fetchMarkets(signal?: AbortSignal): Promise<Record<string,
 }
 
 /** Authenticated wallet actions (send, Solana quote/swap/balance). */
-export async function walletAction<T = any>(body: Record<string, unknown>): Promise<T> {
+const operationKeys = new Map<string, string>();
+
+export async function walletAction<T = any>(body: Record<string, unknown>, confirmationId?: string): Promise<T> {
   const { supabase } = await import("@/integrations/supabase/client");
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error("Please sign in");
-  const res = await fetch("/api/wallet-action", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session.access_token}` }, body: JSON.stringify(body) });
+  const operation = `${data.session.user.id}:${JSON.stringify(body)}`;
+  let key = confirmationId || operationKeys.get(operation);
+  if ((body.action === "send" || body.action === "swap") && !key) { key = crypto.randomUUID(); operationKeys.set(operation, key); }
+  const res = await fetch("/api/wallet-action", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session.access_token}`, ...(key ? { "Idempotency-Key": key } : {}) }, body: JSON.stringify(body) });
   const j = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(j.error || "Action failed");
+  if (!confirmationId) operationKeys.delete(operation);
   return j as T;
 }
 export const SOL_MINT = "So11111111111111111111111111111111111111112";

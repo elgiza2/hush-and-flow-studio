@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 import "@/styles/ceyo.css";
 import "@/styles/settings-polish.css";
 import { VoiceSettingsFields } from "./VoiceControls";
@@ -85,7 +86,7 @@ export function AgentForm({
   const [v, setV] = useState<VoiceSettings>(voice);
   const [description, setDescription] = useState(initial?.description || "");
   const [prompt, setPrompt] = useState(initial?.prompt || "");
-  const ar = lang === "ar";
+  const ar = false;
   const look = { shape, hex };
   const ok = name.trim().length >= 2 && !busy;
   const submit = () => {
@@ -123,7 +124,7 @@ export function AgentForm({
         <div className="gx-colors">{BOT_COLORS.map((c) => <button type="button" key={c.hex} aria-label={c.hex} data-active={hex === c.hex} style={{ background: c.hex }} onClick={() => setHex(c.hex)} />)}</div>
         <div className="gx-voice"><p className="cx-field-label">{lang === "ar" ? "الصوت واللغة" : "Voice & language"}</p><VoiceSettingsFields value={v} onChange={setV} /></div>
       </div>
-      {error && <p className="gx-error" role="alert">{error}</p>}
+      {error && <p className="gx-error" role="alert">{userErrorText(error)}</p>}
       <div className="gx-create-foot"><button type="button" className="gx-create-cta" disabled={!ok} onClick={submit}>{busy ? "…" : cta || (initial ? (ar ? "حفظ" : "Save") : (ar ? "إنشاء" : "Create"))}</button></div>
     </section>
   );
@@ -165,7 +166,7 @@ export function GroupForm({
       <div className="gx-create-body gx-center">
         <div className="gx-group-preview">{chosen.slice(0, 3).map((a, i) => <span key={a.id} style={{ zIndex: 3 - i }}><BotAvatar agent={a} size={56} /></span>)}</div>
         <input className="gx-name gx-name-soft" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Project Falcon" />
-        {error && <p className="hub-error" role="alert">{error}</p>}
+        {error && <p className="hub-error" role="alert">{userErrorText(error)}</p>}
       </div>
       <button type="button" className="gx-create-cta" data-variant={name.trim() ? "solid" : "outline"} disabled={busy} onClick={() => finish(!name.trim())}>{busy ? "…" : name.trim() ? "Create" : "Skip"}</button>
     </section>
@@ -216,7 +217,7 @@ export function ProfilePanel({
 }) {
   void sessions; void onOpenChat;
   const [notify, setNotify] = useState(() => { try { return localStorage.getItem(`ceyo_bot_notify:${agent.id}`) !== "0"; } catch { return true; } });
-  const ar = lang === "ar";
+  const ar = false;
   const [view, setView] = useState<"main" | "routines" | "library" | "members" | "edit" | "avatar">("main");
   const [menu, setMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -281,7 +282,7 @@ export function ProfilePanel({
 }
 
 function EditGroup({ lang, group, agents, onBack, onAvatar, onSave }: { lang: HubLang; group: AgentGroup; agents: AgentInfo[]; onBack: () => void; onAvatar: () => void; onSave: (name: string) => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [name, setName] = useState(group.name);
   const changed = name.trim().length > 0 && name.trim() !== group.name;
   return (
@@ -299,7 +300,7 @@ function EditGroup({ lang, group, agents, onBack, onAvatar, onSave }: { lang: Hu
 }
 
 function GroupAvatarPage({ lang, group, agents, onBack }: { lang: HubLang; group: AgentGroup; agents: AgentInfo[]; onBack: () => void }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [tab, setTab] = useState<"generate" | "upload">("generate");
   const [prompt, setPrompt] = useState("");
   const [err, setErr] = useState("");
@@ -357,7 +358,7 @@ export function SearchOverlay({
   onGroup: (id: string) => void;
   onSession: (session: SessionInfo) => void;
 }) {
-  const ar = lang === "ar";
+  const ar = false;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<SearchFilter>("All");
   const q = query.trim().toLowerCase();

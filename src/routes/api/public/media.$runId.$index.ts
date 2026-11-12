@@ -6,7 +6,8 @@ export const Route = createFileRoute("/api/public/media/$runId/$index")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
-        const index = Number(params.index) || 0;
+        const index = Number(params.index);
+        if (!Number.isSafeInteger(index) || index < 0) return new Response("Not found", { status: 404 });
         const s = new URL(request.url).searchParams.get("s") || "";
         if (!verifyMediaLink(params.runId, index, s)) return new Response("Forbidden", { status: 403 });
         const run = await readRun(params.runId).catch(() => null);

@@ -1,3 +1,4 @@
+import { userErrorText } from "@/lib/errors";
 /** Instagram-style voice and video call screens with a draggable minimized bubble. Calls never write to the chat. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, PhoneOff, ChevronDown, Hand, Video, VideoOff, Volume2, SwitchCamera, ScreenShare, ScreenShareOff } from "lucide-react";
@@ -151,7 +152,7 @@ function VoiceCall({ call, minimized }: { call: ActiveCall; minimized: boolean }
     startRealtimeCall({
       voiceId: choice.voiceId, language: choice.language, agentName: call.agent.name, agentPrompt: call.agent.prompt || call.agent.description || "", reason: call.reason,
       onPhase: (p) => { if (!cancelled) { setPhase(p); if (p === "speaking") setError(""); } },
-      onError: (m) => { if (!cancelled) setError(m); },
+      onError: (m) => { if (!cancelled) setError(userErrorText(m)); },
       onTurn: turn => { if (!cancelled) turns.current.push(turn); },
     }).then(async (c) => {
       if (cancelled) { c.end(); return; }
@@ -175,7 +176,7 @@ function VoiceCall({ call, minimized }: { call: ActiveCall; minimized: boolean }
       <CallButton label={ar ? "إنهاء" : "End call"} danger onClick={end}><PhoneOff size={24} /></CallButton>
     </>}>
     {needsTap && <Button variant="ghost" type="button" className="ig-call-pill" onClick={async () => { if (await live.current?.resumeAudio()) setNeedsTap(false); }}><Volume2 size={16} />{ar ? "اضغط لتشغيل الصوت" : "Tap to turn on sound"}</Button>}
-    {(error || choice.error) && <Button variant="ghost" type="button" className="ig-call-pill" data-error role="alert" onClick={() => { setError(""); choice.reload(); setAttempt((n) => n + 1); }}>{error || choice.error} · {ar ? "حاول تاني" : "Retry"}</Button>}
+    {(error || choice.error) && <Button variant="ghost" type="button" className="ig-call-pill" data-error role="alert" onClick={() => { setError(""); choice.reload(); setAttempt((n) => n + 1); }}>{userErrorText(error || choice.error)} · {ar ? "حاول تاني" : "Retry"}</Button>}
   </Shell>;
 }
 
@@ -294,7 +295,7 @@ function VideoCall({ call, minimized }: { call: ActiveCall; minimized: boolean }
     const failed = (message: string) => {
       if (cancelled) return;
       cancelled = true; controller.abort(); clearTimeout(watchdog); clearTimeout(dailyLimitTimer);
-      setError(message); setStatus("ended");
+      setError(userErrorText(message)); setStatus("ended");
       teardown.current = dispose();
     };
     setError(""); setNeedsTap(false); setStatus("connecting");
