@@ -1,3 +1,12 @@
+## Full repair + landing accuracy — 2026-11-12 09:24 UTC
+- [ ] Replace Nova AI in llms.txt and llms-full.txt with accurate public Ceyo information.
+- [ ] Add landing prices from the shared paid-plan catalogue; review mobile/desktop.
+- [ ] Repair actual account deletion, wallet read failures/concurrent creation/duplicate actions.
+- [ ] Repair unsigned media handling, job state persistence/recovery and stale reminder queries.
+- [ ] Finish English interface, safe user errors and landing-inspired email templates.
+- [ ] Run regression/public flow checks and record blockers without claiming live deployment.
+- Social bio: owner is updating @ceyosi with https://ceyo.si; no social account edit requested.
+
 ## Paywall + landing story — 2026-11-12
 - [x] Free accounts get no usage; subscription required.
 - [x] Landing page (incl. 1,000+ app integrations): explain full projects, wallet, phone/video calls, per-bot computers and parallel specialist work.

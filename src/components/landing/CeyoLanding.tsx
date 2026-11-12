@@ -3,6 +3,7 @@ import template from "./ceyo-landing.html?raw";
 import orbCss from "@/styles/agent.css?raw";
 import skyPainting from "@/assets/landing/sky-painting.jpg";
 import { LANDING_COPY, detectLandingLang, type LandingLang } from "./landingContent";
+import { PLAN_PRICES } from "@/lib/payments/plans";
 import { webAppOrigin } from "@/config/domains";
 
 const LANG_KEY = "ceyo-landing-lang";
@@ -24,6 +25,11 @@ export default function CeyoLanding() {
       skyPainting,
       appUrl: `${webAppOrigin(location.host, location.origin)}/auth`,
     };
+    const pricing = (["plus", "pro", "ultra"] as const).map((tier) => {
+      const prices = PLAN_PRICES[tier];
+      const annual = prices.yearly ? `<p class="annual">or $${prices.yearly}/year, billed annually</p>` : '<p class="annual">Billed monthly</p>';
+      return `<article class="price-plan"><h3>${tier[0].toUpperCase() + tier.slice(1)}</h3><p class="price">$${prices.monthly}<span>/month</span></p>${annual}<a class="btn" href="${esc(values.appUrl)}" target="_top">Choose ${tier[0].toUpperCase() + tier.slice(1)}</a></article>`;
+    }).join("");
     const rows = copy.rows
       .map((r) => `<article class="story-row reveal"><h3>${orb(r.color, 34, "hello")}${esc(r.title)}</h3><div><p>${esc(r.body)}</p></div></article>`)
       .join("");
@@ -34,6 +40,7 @@ export default function CeyoLanding() {
     return template
       .replace("{{orbCss}}", `<style>${orbCss}</style>`)
       .replace("{{storyRows}}", rows)
+      .replace("{{pricingRows}}", pricing)
       .replace("{{faqRows}}", faqs)
       .replace(/\{\{(\w+)\}\}/g, (_, k: string) => esc(values[k] ?? ""))
       .replace('<html lang="en">', `<html lang="${lang}" dir="${ar ? "rtl" : "ltr"}">`)
