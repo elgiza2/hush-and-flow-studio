@@ -129,5 +129,6 @@ export const LANDING_COPY: Record<LandingLang, LandingCopy> = { en, ar };
 export function detectLandingLang(saved: string | null, query: string | null, device: string | undefined): LandingLang {
   if (query === "ar" || query === "en") return query;
   if (saved === "ar" || saved === "en") return saved;
-  return device?.toLowerCase().startsWith("ar") ? "ar" : "en";
+  void device;
+  return "ar";
 }
