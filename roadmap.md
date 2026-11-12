@@ -449,3 +449,8 @@
 - [x] Live plan tool, 3-strike same-failure reflection, old tool-output compaction; step limits raised (chat 20, routines 25, background 40).
 - [x] Browser show_user: screenshot card in chat so the user scans WhatsApp/Telegram Web QR; session saved in the bot browser. Live scan unverified.
 - [ ] Instant inbound-message listeners for WhatsApp/Telegram: need an always-on worker; currently 5-minute routines.
+
+## Sign-in buttons — 2026-11-12
+- [x] Add Sign in with Apple button (official Apple artwork) to the sign-in screens. Live sign-in blocked: Apple is switched on in Supabase but its secret key is missing.
+- [x] Add Sign in with Microsoft button to the sign-in screens. Live sign-in blocked: Microsoft (Azure) is switched on in Supabase but its client secret is missing.
+- [x] Fix the failing build so publishing works again (bare `entities` alias removed).

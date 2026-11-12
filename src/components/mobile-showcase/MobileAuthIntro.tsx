@@ -5,9 +5,11 @@ import { AnimatePresence, m as motion, useReducedMotion } from "framer-motion";
 import { useUserLang } from "@/lib/authI18n";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { AppleSignInButton } from "@/components/auth/AppleSignInButton";
+import { MicrosoftSignInButton } from "@/components/auth/MicrosoftSignInButton";
 
 interface Props {
-  onGoogle: () => void; onGithub?: () => void; onEmail: () => void; onBack?: () => void; onClose?: () => void; onTelegram?: () => void;
+  onGoogle: () => void; onApple?: () => void; onMicrosoft?: () => void; onGithub?: () => void; onEmail: () => void; onBack?: () => void; onClose?: () => void; onTelegram?: () => void;
   expanded?: boolean; showPasswordField?: boolean; email?: string; setEmail?: (v: string) => void;
   password?: string; setPassword?: (v: string) => void; showPassword?: boolean; setShowPassword?: (v: boolean) => void;
   isSubmitting?: boolean; onSubmitEmail?: () => void; onSubmitPassword?: () => void; onForgotPassword?: () => void; error?: string | null;
@@ -30,6 +32,8 @@ export default function MobileAuthIntro(p: Props) {
       {p.error && <p role="alert" className="megsy-auth-error">{p.error}</p>}
       {!p.expanded ? <>
         <GoogleSignInButton label={label("Google")} onClick={p.onGoogle} disabled={p.isSubmitting} />
+        {p.onApple && <AppleSignInButton onClick={p.onApple} disabled={p.isSubmitting} />}
+        {p.onMicrosoft && <MicrosoftSignInButton label={label("Microsoft")} onClick={p.onMicrosoft} disabled={p.isSubmitting} />}
         <Button variant="ghost" className="megsy-auth-pill megsy-auth-primary" onClick={p.onEmail}><Mail size={21} /><span>{ar ? "التسجيل بالبريد الإلكتروني" : "Continue with email"}</span></Button>
       </> : <form className="megsy-auth-form" onSubmit={e => { e.preventDefault(); if (!p.isSubmitting) (p.showPasswordField ? p.onSubmitPassword : p.onSubmitEmail)?.(); }}>
         <h2>{p.showPasswordField ? (creating ? (ar ? "أنشئ كلمة مرور" : "Create your password") : (ar ? "أدخل كلمة المرور" : "Enter your password")) : (ar ? "أدخل بريدك الإلكتروني" : "Enter your email")}</h2>

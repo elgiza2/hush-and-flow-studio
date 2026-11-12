@@ -10,13 +10,13 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   // Vercel builds use its server adapter; Lovable preview keeps its managed preset.
   ...(process.env.VERCEL === "1" ? { nitro: { preset: "vercel" } } : {}),
-  // Email rendering must use the hoisted entities 4.5.0 copy during SSR.
+  // Email rendering must use the hoisted entities 4.5.0 copy for its legacy `entities/lib/*` imports.
+  // Never alias bare "entities": newer packages (htmlparser2 10) import `entities/decode` from their own v7 copy.
   vite: {
     resolve: {
       alias: {
         "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities/lib/decode.js"),
         "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities/lib/encode.js"),
-        entities: path.resolve(__dirname, "node_modules/entities"),
       },
     },
   },

@@ -1,44 +1,21 @@
-/** @doc Sign in with Apple, brokered by Clerk and bridged into the app account.
- *  Hidden entirely when Clerk is not configured.
- */
-import { useState } from "react";
-import { useSignIn } from "@clerk/clerk-react";
-import { toast } from "sonner";
-import { clerkEnabled } from "@/lib/clerk/config";
+/** @doc Sign in with Apple button drawn to Apple's guidelines with Apple's official logo artwork. */
+import { Button } from "@/components/ui/button";
+import appleLogoWhite from "@/assets/auth/apple-logo-white.svg";
+import appleLogoBlack from "@/assets/auth/apple-logo-black.svg";
 
-function AppleButtonInner({ className }: { className?: string }) {
-  const { signIn, isLoaded } = useSignIn();
-  const [busy, setBusy] = useState(false);
+/** Apple requires one of its approved titles; keep it identical everywhere in the app. */
+export const APPLE_SIGN_IN_TITLE = "Continue with Apple";
 
-  async function start() {
-    if (!isLoaded || !signIn) return;
-    setBusy(true);
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_apple",
-        redirectUrl: `${window.location.origin}/auth/apple-callback`,
-        redirectUrlComplete: `${window.location.origin}/auth/apple-callback`,
-      });
-    } catch (err) {
-      setBusy(false);
-      toast.error((err as Error).message || "Apple sign-in is unavailable");
-    }
-  }
-
-  return (
-    <button onClick={() => void start()} className={className} disabled={busy || !isLoaded} type="button">
-      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M16.36 12.78c.02 2.6 2.28 3.47 2.31 3.48-.02.06-.36 1.24-1.2 2.45-.72 1.05-1.47 2.1-2.66 2.12-1.16.02-1.54-.69-2.87-.69-1.33 0-1.75.67-2.85.71-1.14.04-2.01-1.12-2.74-2.17-1.58-2.29-2.79-6.47-1.17-9.29.81-1.4 2.25-2.29 3.81-2.31 1.12-.02 2.18.75 2.87.75.68 0 1.97-.93 3.32-.79.57.02 2.16.21 3.19 1.72-.08.05-1.9 1.11-1.88 3.31M14.2 4.2c.61-.74 1.02-1.77.91-2.8-.88.04-1.95.59-2.58 1.32-.57.65-1.06 1.7-.93 2.7.98.08 1.99-.5 2.6-1.22" />
-      </svg>
-      {busy ? "Connecting…" : "Continue with Apple"}
-    </button>
-  );
+/** `white` sits on dark backgrounds (the sign-in screens are always dark); `black` on light ones. */
+export function AppleSignInButton({ onClick, disabled = false, tone = "white", className = "" }: {
+  onClick: () => void; disabled?: boolean; tone?: "white" | "black"; className?: string;
+}) {
+  // White button uses the black logo artwork and vice versa; the artwork carries its own padding.
+  const logo = tone === "white" ? appleLogoBlack : appleLogoWhite;
+  return <Button variant="ghost" type="button" className={`ceyo-apple-signin ceyo-apple-signin--${tone} ${className}`} onClick={onClick} disabled={disabled}>
+    <img src={logo} alt="" aria-hidden="true" draggable={false} />
+    <span>{APPLE_SIGN_IN_TITLE}</span>
+  </Button>;
 }
 
-/** Apple sign-in stays hidden until real Apple credentials are configured. */
-const appleEnabled = String(import.meta.env.VITE_APPLE_SIGNIN_ENABLED ?? "") === "true";
-
-export default function AppleSignInButton({ className }: { className?: string }) {
-  if (!appleEnabled || !clerkEnabled) return null;
-  return <AppleButtonInner className={className} />;
-}
+export default AppleSignInButton;

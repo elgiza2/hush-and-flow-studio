@@ -1,0 +1,24 @@
+/* Apple and Microsoft sign-in buttons. Brand colors are fixed by each provider's guidelines. */
+html body button.ceyo-apple-signin, html body .megsy-auth-screen button.ceyo-apple-signin, html body .megsy-auth-screen button.ceyo-apple-signin:hover {
+  display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; min-height: 48px;
+  padding: 0 20px 0 0; gap: 0; border: 0 !important; border-radius: 999px; margin-bottom: 10px; overflow: hidden;
+  /* Apple: title font size is 43% of the button height. */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 20.5px !important;
+  line-height: 1 !important; font-weight: 500; letter-spacing: 0; box-shadow: none !important;
+}
+html body button.ceyo-apple-signin--white, html body .megsy-auth-screen button.ceyo-apple-signin--white { background: #fff !important; color: #000 !important; -webkit-text-fill-color: #000 !important; }
+html body button.ceyo-apple-signin--black, html body .megsy-auth-screen button.ceyo-apple-signin--black { background: #000 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+/* Logo artwork matches the button height; never cropped or padded. */
+html body button.ceyo-apple-signin > img { height: 48px; width: auto; flex-shrink: 0; display: block; }
+
+:root { --microsoft-button-bg: #fff; --microsoft-button-border: #8c8c8c; --microsoft-button-text: #5e5e5e; }
+.dark, .megsy-auth-screen { --microsoft-button-bg: #2f2f2f; --microsoft-button-border: #2f2f2f; --microsoft-button-text: #fff; }
+html body button.ceyo-microsoft-signin, html body .megsy-auth-screen button.ceyo-microsoft-signin, html body .megsy-auth-screen button.ceyo-microsoft-signin:hover {
+  display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; min-height: 48px;
+  padding: 12px; gap: 12px; border: 1px solid var(--microsoft-button-border) !important; border-radius: 999px; margin-bottom: 10px;
+  background: var(--microsoft-button-bg) !important; color: var(--microsoft-button-text) !important;
+  -webkit-text-fill-color: var(--microsoft-button-text) !important;
+  font-family: "Segoe UI", "DM Sans", system-ui, sans-serif; font-size: 15px !important; line-height: 20px !important; font-weight: 600;
+  letter-spacing: 0; box-shadow: none !important;
+}
+html body button.ceyo-microsoft-signin > svg { width: 20px !important; height: 20px !important; flex-shrink: 0; }

@@ -94,6 +94,7 @@ const DICT: Record<string, Entry> = {
   forgotPasswordLink: { en: "Forgot password?", "ar-eg": "نسيت كلمة السر؟" },
   or: { en: "or", "ar-eg": "أو" },
   continueWithGoogle: { en: "Continue with Google", "ar-eg": "كمّل بجوجل" },
+  continueWithMicrosoft: { en: "Continue with Microsoft", "ar-eg": "كمّل بمايكروسوفت" },
   continueWithGitHub: { en: "Continue with GitHub", "ar-eg": "كمّل بـ GitHub" },
   continueWithTelegram: { en: "Continue with Telegram", "ar-eg": "كمّل بـ Telegram" },
   inviteCode: { en: "Invite code", "ar-eg": "كود الدعوة" },

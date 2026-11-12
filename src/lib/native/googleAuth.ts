@@ -26,17 +26,23 @@ function authClient() {
   return nativeClient;
 }
 
-export async function startNativeGoogle() {
+export type NativeOAuthProvider = "google" | "apple" | "azure";
+
+/** Android opens every provider in the system browser and returns a PKCE code to the app. */
+export async function startNativeOAuth(provider: NativeOAuthProvider) {
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return false;
   const { Browser } = await import("@capacitor/browser");
   const { data, error } = await authClient().auth.signInWithOAuth({
-    provider: "google", options: { redirectTo: NATIVE_GOOGLE_RETURN, skipBrowserRedirect: true },
+    provider,
+    options: { redirectTo: NATIVE_GOOGLE_RETURN, skipBrowserRedirect: true, ...(provider === "azure" ? { scopes: "email" } : {}) },
   });
   if (error) throw error;
-  if (!data.url) throw new Error("Google sign-in unavailable");
+  if (!data.url) throw new Error("Sign-in unavailable");
   await Browser.open({ url: data.url });
   return true;
 }
+
+export const startNativeGoogle = () => startNativeOAuth("google");
 
 /** Only a PKCE code reaches the custom scheme; session tokens never enter a URL. */
 export async function listenNativeGoogle(onSuccess: () => void, onError: (error: unknown) => void) {
@@ -51,11 +57,11 @@ export async function listenNativeGoogle(onSuccess: () => void, onError: (error:
     try {
       const { data, error } = await authClient().auth.exchangeCodeForSession(code);
       if (error) throw error;
-      if (!data.session) throw new Error("Google sign-in unavailable");
+      if (!data.session) throw new Error("Sign-in unavailable");
       const restored = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
       if (restored.error) throw restored.error;
       const verified = await supabase.auth.getUser();
-      if (verified.error || !verified.data.user) throw new Error("Google sign-in could not be verified");
+      if (verified.error || !verified.data.user) throw new Error("Sign-in could not be verified");
       window.localStorage.removeItem("ceyo-native-google");
       if (!disposed) onSuccess();
     } catch (error) { if (!disposed) onError(error); }
