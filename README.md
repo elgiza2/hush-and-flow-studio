@@ -285,6 +285,11 @@ bunx vitest run
 انظر `roadmap.md` لحالة الطلب الحالي؛ الأقسام التاريخية فيه ليست قائمة حقائق حديثة وقد تتعارض بسبب نقل المساحات والخدمات.
 
 ## Current work
+### Landing page — 2026-11-12
+- ceyo.si and ceyo.app now show the main landing page at "/" (web only); web.ceyo.si stays the web app and app.ceyo.si the Android app. Other app paths on landing hosts still move to web.ceyo.si. Previews open the landing with `/?landing=1`.
+- The page uses the megsy-global-voice design (sky painting, triptych cards, questions, cinematic footer) with Ceyo's real orb bots in the hero, chat card, cards, ability rows, questions, call-to-action and header. Arabic/English follow the device, `?lang=`, or the footer switch.
+- Verification: 14 address tests pass; preview desktop 1280px and phone 390px screenshots, language switch and "Start" link checked; the regular app still opens at "/" on other hosts. Live custom domains unverified until publish; no Google Play link yet.
+
 ### Home group rows — 2026-11-11
 - Bot groups and mixed people/bot groups use compact member portraits in the same 36px slot as regular chat avatars; row spacing, titles and message previews retain the normal chat styling. Existing authorized thread-info reads supply bot portraits; chat behavior is unchanged.
 - Verification: isolated actual-component rendering at 434×716 and 1280×1800 confirmed identical 51.5px row heights and title alignment, three bot portraits in mixed groups, and normal group opening. Six existing avatar/group-storage tests pass and preview build is OK. No page errors; sample-session background requests returned 400, so this is presentation verification only, not a real-account check (external unmanaged session unavailable).
