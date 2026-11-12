@@ -285,9 +285,14 @@ bunx vitest run
 انظر `roadmap.md` لحالة الطلب الحالي؛ الأقسام التاريخية فيه ليست قائمة حقائق حديثة وقد تتعارض بسبب نقل المساحات والخدمات.
 
 ## Current work
+### Landing visibility and inline visual answers — 2026-11-12
+- Removed a dangling listener for the deleted language button that aborted the landing animation script and left nine sections hidden. English-only page and domain split remain unchanged.
+- Current bot and people/group chats share formatted Markdown tables and completed `widget` drawings (HTML/SVG/canvas); explicit visual follow-ups use the normal chat send path. Agent prompts request organized visual answers when useful.
+- Verification: desktop 1280×1800 and phone 390×844 landing sections, FAQ interaction and no horizontal overflow checked; sample table/chart/follow-up checked using the actual renderer. Widget storage, parent-document and network access are blocked. 28 focused tests pass; preview build OK. Real signed-in model generation remains unverified because this project's external auth cannot provide a test session. These changes are not published yet.
+
 ### Landing page — 2026-11-12
 - ceyo.si and ceyo.app now show the main landing page at "/" (web only); web.ceyo.si stays the web app and app.ceyo.si the Android app. Other app paths on landing hosts still move to web.ceyo.si. Previews open the landing with `/?landing=1`.
-- The page uses the megsy-global-voice design (sky painting, triptych cards, questions, cinematic footer) with Ceyo's real orb bots in the hero, chat card, cards, ability rows, questions, call-to-action and header. Arabic/English follow the device, `?lang=`, or the footer switch.
+- The page uses the megsy-global-voice design (sky painting, triptych cards, questions, cinematic footer) with Ceyo's real orb bots throughout. The page is always English; there is no language switch.
 - Verification: 14 address tests pass; preview desktop 1280px and phone 390px screenshots, language switch and "Start" link checked; the regular app still opens at "/" on other hosts. Live custom domains unverified until publish; no Google Play link yet.
 
 ### Home group rows — 2026-11-11

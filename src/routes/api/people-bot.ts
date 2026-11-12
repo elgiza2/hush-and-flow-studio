@@ -3,6 +3,7 @@ import { z } from "zod";
 import { botsToAnswer } from "@/lib/people/mentions";
 import { runAgentLoop } from "@/lib/ceyo/agentLoop.server";
 import { isUsageExhausted } from "@/lib/ceyo/usage";
+import { VISUAL_ANSWER_PROMPT } from "@/components/chat/visualAnswer";
 
 const input = z.object({ threadId: z.string().uuid(), messageId: z.string().uuid() });
 const noStore = { "Cache-Control": "no-store" };
@@ -37,9 +38,10 @@ async function handle(request: Request) {
     if (!full) continue;
     // Same loop as one-to-one chats: web tools plus the bot's own cloud computer.
     const system = `You are ${full.name}, one of several bots taking part in a group chat with real people.\n${full.instructions || ""}\nReply briefly from your own role. Other bots may already have answered in the chat above: add something new instead of repeating them. Do not prefix your reply with your name. Use your tools (web search, reading pages, run_code on your cloud computer) when the message needs fresh facts, calculations or files; claim you ran something only after a successful tool result.`;
+    const visualSystem = `${system}\n${VISUAL_ANSWER_PROMPT}`;
     let text = "";
     try {
-      text = (await runAgentLoop(system, [
+      text = (await runAgentLoop(visualSystem, [
         { role: "user", content: `Recent chat (context only):\n${lines.join("\n")}` },
         { role: "user", content: msg.content },
       ], () => {}, request.signal, async () => [], { usageOwner: auth.userId, botId: full.owner_id === auth.userId ? full.id : null, maxSteps: 8 })).trim();

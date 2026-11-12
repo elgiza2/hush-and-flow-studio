@@ -5,3 +5,14 @@
 .chat-file-body pre,.chat-attachment pre{padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;font-size:12px;line-height:1.6}
 .chat-attachment{border-top:1px solid var(--cv-line);font-size:12px;padding:8px;color:var(--cv-ink)}.chat-attachment summary{cursor:pointer}.chat-attachment img,.chat-attachment video{width:100%;max-height:220px;object-fit:contain;margin-top:8px}
 .chat-media-creator{padding:12px;max-height:65dvh;overflow:auto}.chat-media-creator header{display:flex;align-items:center;justify-content:space-between}.chat-media-modes{display:flex;gap:8px;margin:10px 0}.chat-media-creator textarea{background:var(--cv-panel);border:1px solid var(--cv-line);border-radius:6px;width:100%;min-height:72px;padding:10px;color:var(--cv-ink);margin-bottom:8px}.chat-media-creator [role=alert]{color:var(--cv-ink);font-size:13px;margin:10px 0}
+.cx-agent-body{min-width:0}
+.cx-formatted-answer{min-width:0;max-width:100%;line-height:1.7;overflow-wrap:anywhere}
+.cx-formatted-answer h1,.cx-formatted-answer h2,.cx-formatted-answer h3{line-height:1.35;margin:18px 0 10px;font-weight:600}
+.cx-formatted-answer h1{font-size:22px}.cx-formatted-answer h2{font-size:20px}.cx-formatted-answer h3{font-size:17px}
+.cx-formatted-answer p{margin:0 0 12px}.cx-formatted-answer p:last-child{margin-bottom:0}
+.cx-formatted-answer ul,.cx-formatted-answer ol{padding-inline-start:24px;margin:10px 0}.cx-formatted-answer li{margin:5px 0}
+.cx-formatted-answer pre{max-width:100%;overflow-x:auto;padding:12px;background:var(--cv-pricing-panel);border-radius:6px;white-space:pre;font-size:13px}
+.cx-answer-table{width:100%;max-width:100%;overflow-x:auto;margin:14px 0;border:1px solid var(--cv-line);border-radius:6px;overscroll-behavior-x:contain}
+.cx-answer-table table{width:100%;border-collapse:collapse;font-size:14px}.cx-answer-table th,.cx-answer-table td{padding:10px 12px;text-align:start;border-bottom:1px solid var(--cv-line);min-width:100px}
+.cx-answer-table th{background:var(--cv-pricing-panel);font-weight:600}.cx-answer-table tr:last-child td{border-bottom:0}
+.cx-visual-widget{display:block;width:100%;max-width:100%;height:revert;border:1px solid var(--cv-line);border-radius:8px;background:var(--cv-panel);margin:14px 0}

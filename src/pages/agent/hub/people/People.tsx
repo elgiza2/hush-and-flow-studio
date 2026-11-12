@@ -1,8 +1,7 @@
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { supabase } from "@/integrations/supabase/client";
 import type { AgentInfo } from "@/lib/agentsky/client";
 import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot } from "@/lib/people/peopleApi";
@@ -205,8 +204,8 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const mentionMatches = mentionQuery === undefined ? [] : info.bots.filter((b) => b.name.toLowerCase().includes(mentionQuery.toLowerCase())).slice(0, 6);
   const pickMention = (name: string) => { setText((t) => t.replace(/@([^\s@]*)$/, `@${name} `)); textarea.current?.focus(); };
 
-  const send = async () => {
-    const content = text.trim();
+  const send = async (followUp?: string) => {
+    const content = (followUp ?? text).trim();
     if (!content) return;
     setText(""); setError("");
     try {
@@ -276,7 +275,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
                   <div className="cx-agent-body">
                     {isGroup && <span className="cx-author" dir="auto">{hit ? hit.bot.name : personLabel(person)}</span>}
                     <div className="cx-bubble cx-bubble-agent" dir="auto">
-                      {hit ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}>{m.content}</ReactMarkdown> : <p style={{ whiteSpace: "pre-wrap" }}>{m.content}</p>}
+                      {hit ? <FormattedAnswer text={m.content} onSend={(message) => { void send(message); }} /> : <p style={{ whiteSpace: "pre-wrap" }}>{m.content}</p>}
                     </div>
                   </div>
                   <span className="cx-time">{time}</span>

@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import {
   ArrowUp,
   ChevronDown,
@@ -512,11 +511,7 @@ export function HubChat({
                         {voiceReply && input ? <VoiceMessage text={b.text} recordingId={`${input.turn.recordingId || input.turnId}:${b.partIndex}`} agentId={speaker.id} agentIds={agents.map((a) => a.id)} settings={settings} ar={ar} /> : b.text && (
                           <div className="cx-bubble cx-bubble-agent" data-hit={hit} data-select={selectable === b.key} dir="auto" {...handlers}>
                             {q ? <p><Highlight text={b.text} q={q} /></p> : (
-                              <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                a: (props) => <a {...props} target="_blank" rel="noreferrer" />,
-                                p: ({ children }) => <p>{mentionify(children, group, agents)}</p>,
-                                li: ({ children }) => <li>{mentionify(children, group, agents)}</li>,
-                              }}>{b.text}</ReactMarkdown>
+                              <FormattedAnswer text={b.text} decorate={(children) => mentionify(children, group, agents)} onSend={(text) => { void s.send(text); }} />
                             )}
                             {reaction && <em className="cx-reaction">{reaction}</em>}
                           </div>

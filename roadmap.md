@@ -461,6 +461,8 @@
 - [x] Fix the failing build so publishing works again (bare `entities` alias removed).
 
 ## Polish pass (2026-11-12)
+- [x] Repair landing-page sections hidden by a script failure; desktop and phone checked.
+- [x] Render organized tables and sandboxed visual answers in bot and group chats; sample renderer verified, signed-in generation unavailable with external auth.
 - [ ] Wallet buy/sell cards: broken boxes with colored edges
 - [ ] Onboarding bot-creation step: same broken boxes
 - [ ] Remove Arabic text from the app (app is English-only)
