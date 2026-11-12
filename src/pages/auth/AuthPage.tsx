@@ -1,10 +1,8 @@
-/** @doc Sign in / sign up — email, Google, Apple and MFA challenge entry. */
+/** @doc Sign in / sign up — email, Google and MFA challenge entry. */
 import { forceDarkTheme } from "@/lib/theme";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { AppleSignInButton } from "@/components/auth/AppleSignInButton";
-import { MicrosoftSignInButton } from "@/components/auth/MicrosoftSignInButton";
 import { supabase } from "@/integrations/supabase/legacyClient";
 import { toast } from "sonner";
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Check, Play } from "lucide-react";
@@ -615,8 +613,6 @@ const AuthPage = () => {
   };
 
   const handleGoogleLogin = () => handleProviderLogin("google");
-  const handleAppleLogin = () => handleProviderLogin("apple");
-  const handleMicrosoftLogin = () => handleProviderLogin("azure");
 
   const handleGithubLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -746,8 +742,6 @@ const AuthPage = () => {
         <MobileAuthIntro
           authMode={creatingPassword ? "signup" : "signin"}
           onGoogle={handleGoogleLogin}
-          onApple={handleAppleLogin}
-          onMicrosoft={handleMicrosoftLogin}
           onGithub={handleGithubLogin}
           onClose={() => navigate("/auth?mode=signup")}
           onBack={() => { if (!isSubmitting) setStep(step === "password" || creatingPassword ? "email" : "intro1"); }}
@@ -930,8 +924,6 @@ const AuthPage = () => {
 
                       <div className="mt-1 grid gap-3">
                         <GoogleSignInButton label={authT("continueWithGoogle")} onClick={handleGoogleLogin} disabled={isSubmitting} className={socialCls} />
-                        <AppleSignInButton onClick={handleAppleLogin} disabled={isSubmitting} />
-                        <MicrosoftSignInButton label={authT("continueWithMicrosoft")} onClick={handleMicrosoftLogin} disabled={isSubmitting} />
                       </div>
                     </motion.div>
                   )}

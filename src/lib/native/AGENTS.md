@@ -1,1 +1,1 @@
-- Web and Android OAuth providers (Google, Apple, Microsoft/azure) share one sign-in handler and the native PKCE return path; Apple's button uses Apple's official logo files only. Why: one redirect flow to maintain and App Review-compliant branding.
+- Web and Android OAuth providers share one sign-in handler and the native PKCE return path. Why: one redirect flow to maintain.
