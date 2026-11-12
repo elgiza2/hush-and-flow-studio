@@ -75,8 +75,8 @@ Allow: /
 
 # Machine-readable summaries for AI assistants
 # See https://llmstxt.org
-# llms: https://www.megsyai.com/llms.txt
-# llms-full: https://www.megsyai.com/llms-full.txt
+# llms: https://ceyo.app/llms.txt
+# llms-full: https://ceyo.app/llms-full.txt
 
-Sitemap: https://www.megsyai.com/sitemap.xml
+Sitemap: https://ceyo.app/sitemap.xml
 
