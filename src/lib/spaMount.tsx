@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { BootFailed } from "@/components/common/BootFailed";
+import { landingRedirect } from "@/config/domains";
 
 /**
  * Shared client mount for the Ceyo SPA, used by both "/" and the "/$"
@@ -27,7 +28,10 @@ function loadChunk<T>(load: () => Promise<T>): Promise<T> {
   });
 }
 
-const isClient = typeof window !== "undefined";
+// Landing domains never load the app: leave before any app code is fetched.
+const landingTo = typeof window !== "undefined" ? landingRedirect(window.location.host, window.location.pathname, window.location.search) : null;
+if (landingTo) window.location.replace(landingTo);
+const isClient = typeof window !== "undefined" && !landingTo;
 const bootPromise = isClient ? loadChunk(() => import("@/lib/spaBoot")) : null;
 const appPromise = isClient ? loadChunk(() => import("@/lib/SpaApp")) : null;
 
@@ -51,6 +55,7 @@ export function SpaMount() {
     };
   }, []);
 
+  if (landingTo) return null;
   if (failed) return <BootFailed />;
   return (
     <Suspense fallback={null}>
